@@ -74,6 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
   const size = typeof body.size === "string" ? body.size : null;
   const engraving = typeof body.engraving === "string" ? body.engraving : null;
   const quantity = typeof body.quantity === "number" ? body.quantity : 1;
+  const theme = typeof body.theme === "string" ? body.theme : "classic";
 
   let price = 3500;
   try {
@@ -97,7 +98,7 @@ export const POST: APIRoute = async ({ request }) => {
     price = fallbackBase * quantity;
   }
 
-  const productBase = cover ? `photobook-${cover}-${size}` : "photobook-bois-classique";
+  const productBase = cover ? `photobook-${cover}-${size}-${theme}` : `photobook-bois-classique-${theme}`;
   const product = quantity >= 2 ? `${productBase} (x${quantity})` : productBase;
 
   const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 32);

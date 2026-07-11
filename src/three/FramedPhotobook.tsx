@@ -5,6 +5,7 @@ import { Text } from "@react-three/drei";
 import {
   COVER_OPTIONS,
   SIZE_OPTIONS,
+  THEME_OPTIONS,
   type CoverMaterial,
   type BookSize,
 } from "./customizerOptions";
@@ -14,6 +15,7 @@ interface FramedPhotobookProps {
   size: BookSize;
   photoUrl: string | null;
   engraving?: string;
+  theme?: string;
   coverOptions?: any[];
   sizeOptions?: any[];
 }
@@ -115,10 +117,15 @@ export function FramedPhotobook({
   size,
   photoUrl,
   engraving = "",
+  theme = "classic",
   coverOptions,
   sizeOptions,
 }: FramedPhotobookProps) {
   const group = useRef<THREE.Group>(null);
+
+  const themeSymbol = useMemo(() => {
+    return THEME_OPTIONS.find((t) => t.value === theme)?.symbol ?? "✨";
+  }, [theme]);
 
   const coverColor = useMemo(
     () => (coverOptions || COVER_OPTIONS).find((c) => c.value === cover)?.color ?? "#d2b48c",
@@ -203,6 +210,30 @@ export function FramedPhotobook({
         <boxGeometry args={[0.1, 0.32, d + 0.01]} />
         <meshPhongMaterial color="#2d221c" shininess={35} />
       </mesh>
+
+      {/* Thematic Laser Engraved Symbol */}
+      <group>
+        <Text
+          position={[0, 0.15, engravingZOffset - 0.25]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.18}
+          color={isWooden ? "#22130c" : "#1a1310"}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {themeSymbol}
+        </Text>
+        <Text
+          position={[0, 0.152, engravingZOffset - 0.252]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.18}
+          color={isWooden ? "#3d2314" : "#d4af37"}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {themeSymbol}
+        </Text>
+      </group>
 
       {/* Engraved Cover Text */}
       {engraving && (

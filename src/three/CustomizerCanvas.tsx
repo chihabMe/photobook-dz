@@ -8,6 +8,7 @@ interface CustomizerCanvasProps {
   size: BookSize;
   photoUrl: string | null;
   engraving?: string;
+  theme?: string;
   coverOptions?: any[];
   sizeOptions?: any[];
 }
@@ -20,6 +21,7 @@ export default function CustomizerCanvas({
   size,
   photoUrl,
   engraving,
+  theme,
   coverOptions,
   sizeOptions,
 }: CustomizerCanvasProps) {
@@ -39,6 +41,7 @@ export default function CustomizerCanvas({
         size={size}
         photoUrl={photoUrl}
         engraving={engraving}
+        theme={theme}
         coverOptions={coverOptions}
         sizeOptions={sizeOptions}
       />

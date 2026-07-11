@@ -34,6 +34,7 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     size?: string;
     engraving?: string;
     quantity?: number;
+    theme?: string;
   } | null>(null);
 
   const [config, setConfig] = useState<{
@@ -138,6 +139,7 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
         size: customization?.size,
         engraving: customization?.engraving,
         quantity: customization?.quantity || 1,
+        theme: customization?.theme || 'classic',
       };
       const res = await fetch("/api/order", {
         method: "POST",
@@ -181,6 +183,20 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     setStatus("idle");
     setServerError(null);
   }
+
+  const getThemeLabel = (themeVal?: string) => {
+    if (!themeVal) return "";
+    const themes = {
+      classic: { fr: "Souvenirs Classiques", ar: "ذكريات كلاسيكية", en: "Classic Memories" },
+      wedding: { fr: "Mariage & Fiançailles", ar: "زواج وخطوبة", en: "Wedding & Engagement" },
+      omra: { fr: "Omra & Hajj", ar: "عمرة وحج", en: "Omra & Hajj" },
+      baby: { fr: "Bébé & Naissance", ar: "طفل ومولود جديد", en: "Baby & Birth" },
+      travel: { fr: "Voyages & Aventures", ar: "سفر ومغامرات", en: "Travel & Vacations" }
+    };
+    const tOpt = themes[themeVal as keyof typeof themes] || themes.classic;
+    const lang = (locale === "ar" || locale === "en" ? locale : "fr") as "fr" | "ar" | "en";
+    return tOpt[lang] || tOpt.fr;
+  };
 
   const qty = customization?.quantity || 1;
   const selectedCover = customization ? (config.coverOptions.find((c) => c.value === customization.cover) || config.coverOptions[0]) : null;
@@ -237,6 +253,12 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
                 <div>
                   <span className="text-on-surface-variant font-medium">{t("form.customCover")}</span>{" "}
                   <span className="font-semibold">{selectedCover?.label || customization.cover}</span>
+                </div>
+                <div>
+                  <span className="text-on-surface-variant font-medium">
+                    {locale === "ar" ? "ثيم التصميم:" : locale === "en" ? "Design Theme:" : "Thème du design :"}
+                  </span>{" "}
+                  <span className="font-semibold">{getThemeLabel(customization.theme)}</span>
                 </div>
                 <div>
                   <span className="text-on-surface-variant font-medium">{t("form.customSize")}</span>{" "}

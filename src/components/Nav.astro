@@ -35,17 +35,12 @@ function getSwitchUrl(target: string) {
   <div
     class="mx-auto flex h-[80px] max-w-container-max items-center justify-between px-gutter"
   >
-    <a href={localUrl("/")} class="flex items-center gap-3">
-      <span
-        class="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm"
-      >
-        <span class="material-symbols-outlined text-xl">photo_album</span>
-      </span>
-      <span
-        class="text-body-lg font-display font-extrabold tracking-tight text-primary md:text-display-lg-mobile"
-      >
-        {t("hero.titleSpan")}
-      </span>
+    <a href={localUrl("/")} class="flex items-center">
+      <img
+        src="/logo.png"
+        alt="Photobook dz"
+        class="h-14 w-auto object-contain"
+      />
     </a>
 
     <nav class="hidden items-center gap-8 md:flex">

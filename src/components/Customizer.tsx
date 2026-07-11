@@ -9,6 +9,7 @@ import {
 import {
   ENGRAVING_MAX,
   formatDA,
+  THEME_OPTIONS,
   type CustomizerState,
   type CoverMaterial,
   type BookSize,
@@ -36,6 +37,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
     engraving: "",
     photoUrl: null,
     quantity: 1,
+    theme: "classic",
   });
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -107,12 +109,13 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
         size: state.size,
         engraving: state.engraving,
         quantity: state.quantity || 1,
+        theme: state.theme || "classic",
       };
       sessionStorage.setItem("customizer_order", JSON.stringify(toSave));
     } catch (e) {
       console.error("Failed to save customizer choices to sessionStorage:", e);
     }
-  }, [state.cover, state.size, state.engraving, state.quantity]);
+  }, [state.cover, state.size, state.engraving, state.quantity, state.theme]);
 
   function setCover(cover: CoverMaterial) {
     setState((s) => ({ ...s, cover }));
@@ -125,6 +128,9 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
   }
   function setQuantity(q: number) {
     setState((s) => ({ ...s, quantity: Math.max(1, q) }));
+  }
+  function setTheme(theme: string) {
+    setState((s) => ({ ...s, theme }));
   }
 
   function handleUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -179,6 +185,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
             size={state.size}
             photoUrl={state.photoUrl}
             engraving={state.engraving}
+            theme={state.theme}
             coverOptions={config.coverOptions}
             sizeOptions={config.sizeOptions}
           />
@@ -203,6 +210,42 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
         </div>
 
         <div className="space-y-stack-lg p-gutter md:flex-grow md:overflow-y-auto">
+          {/* Design Theme Selector */}
+          <fieldset className="space-y-stack-md">
+            <legend className="text-label-bold uppercase tracking-wider text-on-surface">
+              {locale === "ar" ? "ثيم الألبوم" : locale === "en" ? "Album Design Theme" : "Thème de l'album"}
+            </legend>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3">
+              {THEME_OPTIONS.map((opt) => {
+                const active = state.theme === opt.value;
+                const label = opt.label[locale as "fr" | "ar" | "en"] || opt.label.fr;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`relative flex cursor-pointer flex-col items-center justify-center rounded-lg border p-3 text-center transition-all hover:bg-surface-container-low ${
+                      active
+                        ? "border-tertiary-container bg-surface-container-low ring-1 ring-tertiary-container"
+                        : "border-outline-variant"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-2xl text-accent mb-1">{opt.icon}</span>
+                    <span className="text-xs font-bold text-on-surface block leading-tight">
+                      {label}
+                    </span>
+                    <input
+                      className="sr-only"
+                      type="radio"
+                      name="design_theme"
+                      value={opt.value}
+                      checked={active}
+                      onChange={() => setTheme(opt.value)}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
           {/* Cover Material */}
           <fieldset className="space-y-stack-md">
             <legend className="text-label-bold uppercase tracking-wider text-on-surface">

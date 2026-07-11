@@ -11,7 +11,23 @@ export interface CustomizerState {
   engraving: string;
   photoUrl: string | null;
   quantity?: number;
+  theme?: string;
 }
+
+export interface ThemeOption {
+  value: string;
+  label: { fr: string; ar: string; en: string };
+  icon: string;
+  symbol: string;
+}
+
+export const THEME_OPTIONS: ThemeOption[] = [
+  { value: "classic", label: { fr: "Souvenirs Classiques", ar: "ذكريات كلاسيكية", en: "Classic Memories" }, icon: "auto_stories", symbol: "✨" },
+  { value: "wedding", label: { fr: "Mariage & Fiancailles", ar: "زواج وخطوبة", en: "Wedding & Engagement" }, icon: "favorite", symbol: "💍" },
+  { value: "omra", label: { fr: "Omra & Hajj", ar: "عمرة وحج", en: "Omra & Hajj" }, icon: "dark_mode", symbol: "🌙" },
+  { value: "baby", label: { fr: "Bébé & Naissance", ar: "طفل ومولود جديد", en: "Baby & Birth" }, icon: "child_care", symbol: "👶" },
+  { value: "travel", label: { fr: "Voyages & Aventures", ar: "سفر ومغامرات", en: "Travel & Vacations" }, icon: "flight", symbol: "✈️" }
+];
 
 export interface CoverOption {
   value: CoverMaterial;
