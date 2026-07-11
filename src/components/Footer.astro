@@ -1,10 +1,15 @@
 ---
-// Site footer — brand, copyright, and secondary links.
+// Site footer with dynamic translations.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+
 const links = [
-  { label: "About Us", href: "#" },
-  { label: "Contact Support", href: "#" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Shipping Terms", href: "#" },
+  { labelKey: "footer.about" as const, href: "#" },
+  { labelKey: "footer.support" as const, href: "#" },
+  { labelKey: "footer.privacy" as const, href: "#" },
+  { labelKey: "footer.terms" as const, href: "#" },
 ];
 const year = new Date().getFullYear();
 ---
@@ -18,7 +23,7 @@ const year = new Date().getFullYear();
     <div class="flex flex-col gap-4">
       <span class="text-headline-md font-bold text-primary">Photobook dz</span>
       <p class="text-body-md text-on-surface opacity-80">
-        © {year} Photobook dz. Preservation of memories across 58 Wilayas.
+        © {year} Photobook dz. {t("footer.desc")}
       </p>
     </div>
 
@@ -30,7 +35,7 @@ const year = new Date().getFullYear();
               href={l.href}
               class="text-body-md text-on-surface-variant opacity-80 transition-colors hover:text-primary hover:opacity-100"
             >
-              {l.label}
+              {t(l.labelKey)}
             </a>
           ))
         }

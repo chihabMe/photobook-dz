@@ -9,4 +9,11 @@ export default defineConfig({
   output: "static",
   adapter: vercel(),
   integrations: [tailwind(), react()],
+  i18n: {
+    defaultLocale: "fr",
+    locales: ["fr", "en", "ar"],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
 });

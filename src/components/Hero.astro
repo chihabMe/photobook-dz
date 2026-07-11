@@ -1,7 +1,15 @@
 ---
-// Hero section. Left: bilingual headline + COD trust line + pulsing CTA.
-// Right: product showcase — currently a static poster; the lazy 3D photobook
-// canvas mounts here in a later phase, using this image as its fallback.
+// Hero section with dynamic translations. Left: bilingual/localized headline + COD trust line + pulsing CTA.
+// Right: product showcase — a static poster fallback.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+const prefix = locale === "fr" ? "" : `/${locale}`;
+
+function localUrl(path: string) {
+  return `${prefix}${path}`;
+}
 
 const heroImg =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCeRtik8Uz_qzkHI-i9Dk6vZCsr9kqieSCOyXaLFpfxmssS55788BqBhtPOVa2a2KSCmkoKxH216SN71rX-YE_8HkLvd4VOgYeAi10tK9X7k0a-cAAsV6k2HenMCdQTeFpirnrr_8CGGfd1advT6nJ8Vi4UtIuZyUn_69jgOWJSp9jZMZOXT7hCsO8BRt-SO-B72MeMnOTCJfBZ6pKMMwmQXLN7Ek6bM4tR3N7dtVc1zJgdfFvea-FXwA2LrKhmyVs9BbLMOHQe8uAl";
@@ -26,23 +34,22 @@ const heroImg =
   >
     <!-- Copy -->
     <div class="flex flex-col gap-6 text-center lg:text-left">
-      <h1 class="text-display-lg-mobile font-extrabold text-on-background md:text-display-lg">
-        Sublimez votre quotidien avec <span class="text-accent-deep"
-          >Photobook dz</span
-        >
-        <span
-          dir="rtl"
-          class="mt-4 block text-headline-md font-bold text-secondary"
-        >
-          اكتشفوا تشكيلة Photobook dz الرائعة
-        </span>
+      <h1 class="text-display-lg-mobile font-extrabold text-on-background md:text-display-lg leading-tight">
+        {t("hero.title")} <span class="text-accent-deep">{t("hero.titleSpan")}</span>
+        {locale !== "ar" && (
+          <span
+            dir="rtl"
+            class="mt-4 block text-headline-md font-bold text-secondary font-arabic"
+          >
+            {t("hero.subtitle")}
+          </span>
+        )}
       </h1>
 
       <p
         class="mx-auto max-w-xl text-body-lg text-on-surface-variant lg:mx-0"
       >
-        Livraison 58 wilayas disponible. Paiement sécurisé à la réception
-        (COD). Vérification du produit garantie.
+        {t("hero.desc")}
       </p>
 
       <div
@@ -53,14 +60,14 @@ const heroImg =
           class="pulse-green flex min-h-[56px] w-full items-center justify-center gap-2 rounded-md bg-accent px-8 py-4 text-button-text font-semibold text-white shadow-lg transition-colors hover:bg-accent-dark sm:w-auto"
         >
           <span class="material-symbols-outlined">shopping_cart</span>
-          Order Now / اطلب الآن
+          {t("hero.orderBtn")}
         </a>
         <a
-          href="/customizer"
+          href={localUrl("/customizer")}
           class="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-md border border-outline-variant bg-surface px-8 py-4 text-button-text font-semibold text-on-surface transition-colors hover:bg-surface-container-low sm:w-auto"
         >
           <span class="material-symbols-outlined">view_in_ar</span>
-          Personnaliser en 3D
+          {t("hero.customBtn")}
         </a>
       </div>
     </div>
@@ -70,8 +77,6 @@ const heroImg =
       <div
         class="group relative aspect-[4/3] overflow-hidden rounded-xl shadow-2xl"
       >
-        <!-- Poster: server-rendered for LCP/SEO, and the fallback whenever the
-             3D canvas is gated off. -->
         <!-- Poster: server-rendered for LCP/SEO, and the fallback whenever the
              3D canvas is gated off. -->
         <img
@@ -93,17 +98,17 @@ const heroImg =
       >
         <span class="text-2xl">📦</span>
         <span class="text-label-bold font-bold text-on-background"
-          >Livraison 58 Wilayas</span
+          >{t("hero.deliveryBadge")}</span
         >
       </div>
 
       <!-- Floating badge: COD -->
       <div
-        class="absolute -right-6 -top-6 hidden items-center gap-3 rounded-md border border-accent/20 bg-accent-tint p-4 shadow-float md:flex"
+        class="absolute -right-6 -top-6 hidden items-center gap-3 rounded-md border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-float md:flex"
       >
         <span class="text-2xl">🤝</span>
-        <span class="text-label-bold font-bold text-accent-deep"
-          >Paiement à la livraison</span
+        <span class="text-label-bold font-bold text-on-background"
+          >{t("hero.codBadge")}</span
         >
       </div>
     </div>

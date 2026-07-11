@@ -1,26 +1,27 @@
 ---
-// Trust features grid — 3 cards (delivery, COD, verified product).
-// Bilingual FR + Arabic, middle card highlighted in accent tint.
+// Trust features grid with dynamic translations — 3 cards (delivery, COD, verified product).
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+
 const features = [
   {
     icon: "📦",
-    fr: "Livraison 58 Wilayas",
-    ar: "توصيل سريع",
-    desc: "Partout en Algérie, directement à votre porte.",
+    titleKey: "trust.delivery.title" as const,
+    descKey: "trust.delivery.desc" as const,
     highlight: false,
   },
   {
     icon: "🤝",
-    fr: "Paiement à la Livraison",
-    ar: "الدفع عند الاستلام",
-    desc: "Payez en toute sécurité uniquement à la réception.",
+    titleKey: "trust.cod.title" as const,
+    descKey: "trust.cod.desc" as const,
     highlight: true,
   },
   {
     icon: "✅",
-    fr: "Produit Garanti",
-    ar: "فحص السلعة",
-    desc: "Vérifiez votre photobook avant de payer. Satisfaction totale.",
+    titleKey: "trust.guaranteed.title" as const,
+    descKey: "trust.guaranteed.desc" as const,
     highlight: false,
   },
 ];
@@ -30,10 +31,10 @@ const features = [
   <div class="mx-auto max-w-container-max">
     <div class="mb-16 text-center">
       <h2 class="mb-4 text-headline-md font-bold text-on-background">
-        Pourquoi Choisir Photobook dz ?
+        {t("trust.title")}
       </h2>
       <p class="text-body-md text-on-surface-variant">
-        La garantie d'un service premium pour vos souvenirs.
+        {t("trust.subtitle")}
       </p>
     </div>
 
@@ -54,11 +55,8 @@ const features = [
             >
               {f.icon}
             </div>
-            <h3 class="text-lg font-bold text-on-background">{f.fr}</h3>
-            <p dir="rtl" class="text-body-md text-on-surface-variant">
-              {f.ar}
-            </p>
-            <p class="mt-2 text-sm text-secondary">{f.desc}</p>
+            <h3 class="text-lg font-bold text-on-background">{t(f.titleKey)}</h3>
+            <p class="mt-2 text-sm text-secondary">{t(f.descKey)}</p>
           </div>
         ))
       }

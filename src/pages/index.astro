@@ -20,7 +20,7 @@ import OrderForm from "../components/OrderForm.tsx";
       class="bg-surface-variant/30 px-gutter py-section-padding"
     >
       <div class="mx-auto max-w-3xl">
-        <OrderForm client:visible />
+        <OrderForm client:visible locale={Astro.currentLocale} />
       </div>
     </section>
   </main>

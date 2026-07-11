@@ -1,12 +1,17 @@
 ---
-// Product detail — split image/copy card. Price, feature bullets, premium tag.
+// Product detail — split image/copy card. Dynamic localized texts.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+
 const productImg =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCeRtik8Uz_qzkHI-i9Dk6vZCsr9kqieSCOyXaLFpfxmssS55788BqBhtPOVa2a2KSCmkoKxH216SN71rX-YE_8HkLvd4VOgYeAi10tK9X7k0a-cAAsV6k2HenMCdQTeFpirnrr_8CGGfd1advT6nJ8Vi4UtIuZyUn_69jgOWJSp9jZMZOXT7hCsO8BRt-SO-B72MeMnOTCJfBZ6pKMMwmQXLN7Ek6bM4tR3N7dtVc1zJgdfFvea-FXwA2LrKhmyVs9BbLMOHQe8uAl";
 
 const bullets = [
-  "Couverture rigide en bois naturel",
-  "Gravure laser personnalisée",
-  "Papier photo premium mat ou brillant",
+  "product.bullet1" as const,
+  "product.bullet2" as const,
+  "product.bullet3" as const,
 ];
 ---
 
@@ -17,7 +22,7 @@ const bullets = [
     <div class="relative h-96 md:h-auto md:w-1/2">
       <img
         src={productImg}
-        alt="Gros plan sur la couverture bois du photobook montrant la texture du grain"
+        alt="Gros plan sur la couverture bois du photobook"
         loading="lazy"
         class="absolute inset-0 h-full w-full object-cover"
       />
@@ -25,20 +30,18 @@ const bullets = [
 
     <div class="flex flex-col justify-center p-10 md:w-1/2 md:p-16">
       <div class="mb-2 text-sm font-bold uppercase tracking-widest text-accent-deep">
-        Premium Collection
+        {t("product.tag")}
       </div>
       <h2 class="mb-4 text-headline-md font-bold text-on-background">
-        Le Photobook Bois Classique
+        {t("product.title")}
       </h2>
       <p class="mb-8 text-body-lg text-on-surface-variant">
-        Immortalisez vos moments les plus précieux dans notre album phare.
-        Couverture en bois gravée personnalisable, pages épaisses de haute
-        qualité, reliure artisanale.
+        {t("product.desc")}
       </p>
 
       <div class="mb-8 flex items-end gap-4">
         <span class="text-display-lg-mobile font-extrabold text-primary"
-          >3500 DA</span
+          >{t("product.price")}</span
         >
         <span class="mb-2 text-body-lg text-outline line-through">4900 DA</span>
       </div>
@@ -50,7 +53,7 @@ const bullets = [
               <span class="material-symbols-outlined text-accent">
                 check_circle
               </span>
-              {b}
+              {t(b)}
             </li>
           ))
         }
@@ -61,7 +64,7 @@ const bullets = [
         class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-8 py-4 text-button-text font-semibold text-white shadow-cta transition-colors hover:bg-accent-dark sm:w-auto"
       >
         <span class="material-symbols-outlined">shopping_cart</span>
-        Commander maintenant
+        {t("product.orderBtn")}
       </a>
     </div>
   </div>

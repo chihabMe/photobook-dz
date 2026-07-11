@@ -14,6 +14,8 @@ import {
   type BookSize,
 } from "../three/customizerOptions";
 
+import { translations } from "../data/translations";
+
 const CustomizerCanvas = lazy(() => import("../three/CustomizerCanvas"));
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8 MB
@@ -23,7 +25,11 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 // controls sidebar (cover material, size, engraving, photo upload). The
 // uploaded photo is frontend-only — held as an object URL in this component,
 // applied to the 3D cover, and never uploaded or persisted.
-export default function Customizer() {
+export default function Customizer({ locale = "fr" }: { locale?: string }) {
+  const t = (key: keyof typeof translations["fr"]) => {
+    const loc = (locale === "ar" || locale === "en" ? locale : "fr") as "fr" | "ar" | "en";
+    return translations[loc][key] || translations["fr"][key] || String(key);
+  };
   const [state, setState] = useState<CustomizerState>({
     cover: "wooden",
     size: "medium",
@@ -122,11 +128,11 @@ export default function Customizer() {
     if (!file) return;
 
     if (!ACCEPTED.includes(file.type)) {
-      setUploadError("Format non supporté. Utilisez JPG, PNG ou WebP.");
+      setUploadError(t("custom.photoErrFormat"));
       return;
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      setUploadError("Image trop lourde (max 8 Mo).");
+      setUploadError(t("custom.photoErrSize"));
       return;
     }
 
@@ -155,7 +161,7 @@ export default function Customizer() {
         <div className="absolute left-4 top-4 z-10 rounded-lg border border-outline-variant/20 bg-surface/80 px-4 py-2 shadow-sm backdrop-blur-sm">
           <p className="text-label-bold flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-sm">360</span>
-            Interactive Preview
+            {t("custom.interactive")}
           </p>
         </div>
 
@@ -171,7 +177,7 @@ export default function Customizer() {
 
         <div className="pointer-events-none absolute bottom-4 left-0 z-10 w-full text-center">
           <p className="text-sm text-on-surface-variant/50">
-            Drag to rotate • Scroll to zoom
+            {t("custom.dragRotate")}
           </p>
         </div>
       </section>
@@ -180,10 +186,10 @@ export default function Customizer() {
       <section className="relative z-20 flex h-auto w-full flex-col border-l border-outline-variant/10 bg-surface shadow-lg md:h-full md:w-1/3">
         <div className="flex-shrink-0 border-b border-outline-variant/10 p-gutter">
           <h1 className="text-headline-md mb-2 text-on-surface">
-            Design Your Photobook
+            {t("custom.title")}
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            Customize every detail to preserve your memories perfectly.
+            {t("custom.subtitle")}
           </p>
         </div>
 
@@ -191,7 +197,7 @@ export default function Customizer() {
           {/* Cover Material */}
           <fieldset className="space-y-stack-md">
             <legend className="text-label-bold uppercase tracking-wider text-on-surface">
-              Cover Material
+              {t("custom.coverMaterial")}
             </legend>
             <div className="grid grid-cols-1 gap-3">
               {config.coverOptions.map((opt) => {
@@ -243,7 +249,7 @@ export default function Customizer() {
           {/* Cover Photo — frontend-only upload */}
           <div className="space-y-stack-sm">
             <h2 className="text-label-bold uppercase tracking-wider text-on-surface">
-              Cover Photo
+              {t("custom.coverPhoto")}
             </h2>
             {state.photoUrl ? (
               <div className="flex items-center gap-4 rounded-lg border border-outline-variant p-3">
@@ -253,9 +259,9 @@ export default function Customizer() {
                   className="h-16 w-16 rounded-md object-cover"
                 />
                 <div className="flex-grow">
-                  <p className="font-semibold text-on-surface">Photo ajoutée</p>
+                  <p className="font-semibold text-on-surface">{t("custom.photoAdded")}</p>
                   <p className="text-xs text-on-surface-variant">
-                    Visible sur la couverture 3D.
+                    {t("custom.photoAddedDesc")}
                   </p>
                 </div>
                 <button
@@ -263,7 +269,7 @@ export default function Customizer() {
                   onClick={removePhoto}
                   className="rounded-md px-3 py-1 text-sm font-semibold text-error hover:bg-error-container/40"
                 >
-                  Retirer
+                  {t("custom.photoRemove")}
                 </button>
               </div>
             ) : (
@@ -272,10 +278,10 @@ export default function Customizer() {
                   add_photo_alternate
                 </span>
                 <span className="font-semibold text-on-surface">
-                  Ajoutez votre photo
+                  {t("custom.photoUpload")}
                 </span>
                 <span className="text-xs text-on-surface-variant">
-                  JPG, PNG ou WebP — max 8 Mo
+                  {t("custom.photoFormat")}
                 </span>
                 <input
                   ref={fileInput}
@@ -287,8 +293,7 @@ export default function Customizer() {
               </label>
             )}
             <p className="text-xs text-on-surface-variant/70">
-              Votre image reste sur votre appareil — elle n'est jamais envoyée
-              ni enregistrée.
+              {t("custom.photoNote")}
             </p>
             {uploadError && (
               <p className="text-xs font-semibold text-error">{uploadError}</p>
@@ -298,7 +303,7 @@ export default function Customizer() {
           {/* Book Size */}
           <fieldset className="space-y-stack-md">
             <legend className="text-label-bold uppercase tracking-wider text-on-surface">
-              Book Size
+              {t("custom.bookSize")}
             </legend>
             <div className="flex gap-3">
               {config.sizeOptions.map((opt) => {
@@ -331,7 +336,7 @@ export default function Customizer() {
           {/* Cover Engraving */}
           <div className="space-y-stack-sm">
             <h2 className="text-label-bold uppercase tracking-wider text-on-surface">
-              Cover Engraving
+              {t("custom.engraving")}
             </h2>
             <div className="relative">
               <input
@@ -340,11 +345,11 @@ export default function Customizer() {
                 maxLength={ENGRAVING_MAX}
                 value={state.engraving}
                 onChange={(e) => setEngraving(e.target.value)}
-                placeholder="e.g., Our Wedding 2024"
+                placeholder={t("custom.engravingPlaceholder")}
                 className="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 text-on-surface outline-none transition-shadow placeholder:text-on-surface-variant/50 focus:border-tertiary-container focus:ring-2 focus:ring-tertiary-container"
               />
               <p className="mt-2 text-right text-xs text-on-surface-variant">
-                {state.engraving.length}/{ENGRAVING_MAX} characters
+                {state.engraving.length}/{ENGRAVING_MAX} {t("custom.characters")}
               </p>
             </div>
           </div>
@@ -354,7 +359,7 @@ export default function Customizer() {
         <div className="mt-auto flex-shrink-0 border-t border-outline-variant/10 bg-surface p-gutter">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-body-lg text-on-surface-variant">
-              Total Estimation
+              {t("custom.estimation")}
             </span>
             <span className="text-headline-md text-on-surface" id="price_display">
               {formatDA(price)}
@@ -365,14 +370,14 @@ export default function Customizer() {
               local_shipping
             </span>
             <span className="text-label-bold text-xs text-tertiary-container">
-              Pay on Delivery across 58 Wilayas
+              {t("custom.codDisclaimer")}
             </span>
           </div>
           <a
-            href="/#order-form"
+            href={locale === "fr" ? "/#order-form" : `/${locale}/#order-form`}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-tertiary-container py-4 text-button-text font-semibold text-on-primary shadow-cta transition-all hover:opacity-90 active:scale-95"
           >
-            Proceed to Order
+            {t("custom.proceed")}
             <span className="material-symbols-outlined">arrow_forward</span>
           </a>
         </div>
@@ -381,13 +386,14 @@ export default function Customizer() {
   );
 }
 
-function PreviewFallback() {
+function PreviewFallback({ locale = "fr" }: { locale?: string }) {
+  const loc = (locale === "ar" || locale === "en" ? locale : "fr") as "fr" | "ar" | "en";
   return (
     <div className="flex flex-col items-center gap-3 text-on-surface-variant">
       <span className="material-symbols-outlined animate-spin text-3xl">
         progress_activity
       </span>
-      <p className="text-sm">Chargement de l'aperçu 3D…</p>
+      <p className="text-sm">{translations[loc]["custom.loading"]}</p>
     </div>
   );
 }

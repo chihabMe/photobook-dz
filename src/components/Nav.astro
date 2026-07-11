@@ -1,5 +1,32 @@
 ---
-// Sticky top navigation bar. Bilingual FR nav links + green "Order Now" CTA.
+// Sticky top navigation bar with dynamic translations and a language switcher.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+const prefix = locale === "fr" ? "" : `/${locale}`;
+
+function localUrl(path: string) {
+  if (path.startsWith("#")) {
+    return `${prefix}/${path}`;
+  }
+  return `${prefix}${path}`;
+}
+
+const url = Astro.url;
+function getSwitchUrl(target: string) {
+  let pathname = url.pathname;
+  if (pathname.startsWith("/en")) {
+    pathname = pathname.substring(3);
+  } else if (pathname.startsWith("/ar")) {
+    pathname = pathname.substring(3);
+  }
+  if (pathname === "") pathname = "/";
+  if (target === "fr") {
+    return pathname;
+  }
+  return `/${target}${pathname === "/" ? "" : pathname}`;
+}
 ---
 
 <header
@@ -8,7 +35,7 @@
   <div
     class="mx-auto flex max-w-container-max items-center justify-between px-gutter py-4"
   >
-    <a href="#top" class="flex items-center gap-4">
+    <a href={localUrl("/")} class="flex items-center gap-4">
       <span
         class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm"
       >
@@ -17,47 +44,71 @@
       <span
         class="text-display-lg-mobile font-display font-extrabold tracking-tight text-primary"
       >
-        Photobook dz
+        {t("hero.titleSpan")}
       </span>
     </a>
 
     <nav class="hidden items-center gap-8 md:flex">
       <a
-        href="#products"
-        class="text-label-bold border-b-2 border-primary pb-1 font-bold text-primary"
-        >Products</a
+        href={localUrl("#products")}
+        class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
+        >{t("nav.products")}</a
       >
       <a
-        href="/customizer"
+        href={localUrl("/customizer")}
         class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
-        >Customize 3D</a
+        >{t("nav.customizer")}</a
       >
       <a
-        href="#why-us"
+        href={localUrl("#why-us")}
         class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
-        >Why Us</a
+        >{t("nav.whyUs")}</a
       >
       <a
-        href="#reviews"
+        href={localUrl("#reviews")}
         class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
-        >Reviews</a
+        >{t("nav.reviews")}</a
       >
     </nav>
 
-    <a
-      href="#order-form"
-      class="hidden items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark md:flex"
-    >
-      Order Now
-    </a>
+    <div class="flex items-center gap-4">
+      {/* Language Switcher */}
+      <div class="flex items-center rounded-lg bg-surface-container-low p-1 border border-outline-variant/10">
+        <a 
+          href={getSwitchUrl("fr")} 
+          class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "fr" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          FR
+        </a>
+        <a 
+          href={getSwitchUrl("ar")} 
+          class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "ar" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          عربي
+        </a>
+        <a 
+          href={getSwitchUrl("en")} 
+          class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "en" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          EN
+        </a>
+      </div>
 
-    <!-- Mobile: CTA shrinks to icon -->
-    <a
-      href="#order-form"
-      aria-label="Commander"
-      class="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white shadow-cta md:hidden"
-    >
-      <span class="material-symbols-outlined">shopping_cart</span>
-    </a>
+      <a
+        href={localUrl("#order-form")}
+        class="hidden items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark md:flex"
+      >
+        {t("nav.orderNow")}
+      </a>
+
+      <!-- Mobile: CTA shrinks to icon -->
+      <a
+        href={localUrl("#order-form")}
+        aria-label={t("nav.orderNow")}
+        class="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white shadow-cta md:hidden"
+      >
+        <span class="material-symbols-outlined">shopping_cart</span>
+      </a>
+    </div>
   </div>
 </header>

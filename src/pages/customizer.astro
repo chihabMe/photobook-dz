@@ -1,11 +1,35 @@
 ---
 import Base from "../layouts/Base.astro";
 import Customizer from "../components/Customizer.tsx";
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+const prefix = locale === "fr" ? "" : `/${locale}`;
+
+function localUrl(path: string) {
+  return `${prefix}${path}`;
+}
+
+const url = Astro.url;
+function getSwitchUrl(target: string) {
+  let pathname = url.pathname;
+  if (pathname.startsWith("/en")) {
+    pathname = pathname.substring(3);
+  } else if (pathname.startsWith("/ar")) {
+    pathname = pathname.substring(3);
+  }
+  if (pathname === "") pathname = "/";
+  if (target === "fr") {
+    return pathname;
+  }
+  return `/${target}${pathname === "/" ? "" : pathname}`;
+}
 ---
 
 <Base
-  title="Photobook dz — Personnalisez votre album en 3D"
-  description="Concevez votre photobook en direct : matière de couverture, taille, gravure et votre propre photo, visualisés en 3D. Paiement à la livraison, 58 wilayas."
+  title={t("customizer.title")}
+  description={t("customizer.desc")}
 >
   <header
     class="sticky top-0 z-50 w-full border-b border-outline-variant/10 bg-surface/90 shadow-sm backdrop-blur-md"
@@ -13,7 +37,7 @@ import Customizer from "../components/Customizer.tsx";
     <div
       class="mx-auto flex h-[80px] max-w-container-max items-center justify-between px-gutter"
     >
-      <a href="/" class="flex items-center gap-4">
+      <a href={localUrl("/")} class="flex items-center gap-4">
         <span
           class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm"
         >
@@ -22,18 +46,42 @@ import Customizer from "../components/Customizer.tsx";
         <span
           class="text-display-lg-mobile font-display font-extrabold tracking-tight text-primary"
         >
-          Photobook dz
+          {t("hero.titleSpan")}
         </span>
       </a>
 
-      <a
-        href="/#order-form"
-        class="flex items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark"
-      >
-        Order Now
-      </a>
+      <div class="flex items-center gap-4">
+        {/* Language Switcher */}
+        <div class="flex items-center rounded-lg bg-surface-container-low p-1 border border-outline-variant/10">
+          <a 
+            href={getSwitchUrl("fr")} 
+            class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "fr" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+          >
+            FR
+          </a>
+          <a 
+            href={getSwitchUrl("ar")} 
+            class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "ar" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+          >
+            عربي
+          </a>
+          <a 
+            href={getSwitchUrl("en")} 
+            class={`text-xs font-extrabold px-2.5 py-1 rounded transition-colors ${locale === "en" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+          >
+            EN
+          </a>
+        </div>
+
+        <a
+          href={localUrl("#order-form")}
+          class="flex items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark"
+        >
+          {t("nav.orderNow")}
+        </a>
+      </div>
     </div>
   </header>
 
-  <Customizer client:only="react" />
+  <Customizer client:only="react" locale={locale} />
 </Base>
