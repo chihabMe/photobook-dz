@@ -2,7 +2,6 @@
 // Hero section. Left: bilingual headline + COD trust line + pulsing CTA.
 // Right: product showcase — currently a static poster; the lazy 3D photobook
 // canvas mounts here in a later phase, using this image as its fallback.
-import PhotobookMount from "../three/PhotobookMount.tsx";
 
 const heroImg =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCeRtik8Uz_qzkHI-i9Dk6vZCsr9kqieSCOyXaLFpfxmssS55788BqBhtPOVa2a2KSCmkoKxH216SN71rX-YE_8HkLvd4VOgYeAi10tK9X7k0a-cAAsV6k2HenMCdQTeFpirnrr_8CGGfd1advT6nJ8Vi4UtIuZyUn_69jgOWJSp9jZMZOXT7hCsO8BRt-SO-B72MeMnOTCJfBZ6pKMMwmQXLN7Ek6bM4tR3N7dtVc1zJgdfFvea-FXwA2LrKhmyVs9BbLMOHQe8uAl";
@@ -73,6 +72,8 @@ const heroImg =
       >
         <!-- Poster: server-rendered for LCP/SEO, and the fallback whenever the
              3D canvas is gated off. -->
+        <!-- Poster: server-rendered for LCP/SEO, and the fallback whenever the
+             3D canvas is gated off. -->
         <img
           src={heroImg}
           alt="Photobook premium à couverture bois, entrouvert sur des photos de famille"
@@ -83,10 +84,6 @@ const heroImg =
           class="absolute inset-0 z-[1] bg-gradient-to-t from-black/40 to-transparent"
         >
         </div>
-
-        <!-- Interactive 3D photobook, mounted client-side only on capable
-             devices; fades in over the poster. -->
-        <PhotobookMount client:only="react" />
       </div>
 
       <!-- Floating badge: delivery -->
