@@ -13,9 +13,10 @@ export const translations = {
     "nav.orderNow": "Commander",
     
     // Hero
-    "hero.title": "Sublimez votre quotidien avec",
-    "hero.titleSpan": "Photobook dz",
-    "hero.desc": "Livraison 58 wilayas disponible. Paiement sécurisé à la réception (COD). Vérification du produit garantie.",
+    "hero.title": "Photobook en bois personnalisé à",
+    "hero.titleSpan": "3500 DA seulement !",
+    "hero.subtitle": "Offre spéciale : Photobook en bois personnalisé",
+    "hero.desc": "On te fait un magnifique photobook personnalisé avec TES photos, imprimé avec qualité, solide, et avec une belle couverture en bois. Envoie tes photos sur WhatsApp/Viber et on s’occupe de tout !",
     "hero.orderBtn": "Commander / اطلب الآن",
     "hero.customBtn": "Personnaliser en 3D",
     "hero.deliveryBadge": "Livraison 58 Wilayas",
@@ -117,9 +118,10 @@ export const translations = {
     "nav.orderNow": "اطلب الآن",
     
     // Hero
-    "hero.title": "اجعلوا ذكرياتكم تنبض بالحياة مع",
-    "hero.titleSpan": "Photobook dz",
-    "hero.desc": "التوصيل متوفر لـ 58 ولاية. الدفع آمن عند الاستلام. فحص المنتج مضمون قبل الدفع.",
+    "hero.title": "ألبوم صور خشبي مخصص بـ",
+    "hero.titleSpan": "3500 دج فقط!",
+    "hero.subtitle": "فوتوبوك خشبي مخصص لصوركم بـ 3500 دج فقط!",
+    "hero.desc": "فوتوبوك خشبي رائع ومخصص بـ 3500 دج فقط! نصنع لك ألبومًا رائعًا بصورك الخاصة، مطبوعًا بجودة عالية، متينًا، وبغطاء خشبي جميل. أرسل صورك عبر واتساب أو فايبر وسنتكفل بالباقي!",
     "hero.orderBtn": "اطلب الآن",
     "hero.customBtn": "تخصيص ثلاثي الأبعاد",
     "hero.deliveryBadge": "توصيل لـ 58 ولاية",
@@ -221,9 +223,10 @@ export const translations = {
     "nav.orderNow": "Order Now",
     
     // Hero
-    "hero.title": "Elevate your daily memories with",
-    "hero.titleSpan": "Photobook dz",
-    "hero.desc": "Shipping available to 58 wilayas. Secure Cash on Delivery (COD). Product inspection before payment guaranteed.",
+    "hero.title": "Customized wooden photobook for only",
+    "hero.titleSpan": "3500 DA!",
+    "hero.subtitle": "Special offer: Customized wooden photobook",
+    "hero.desc": "Get a beautiful photobook customized with YOUR photos, high-quality printing, solid build, and a gorgeous wooden cover. Send your photos via WhatsApp or Viber and we'll take care of the rest!",
     "hero.orderBtn": "Order Now",
     "hero.customBtn": "Customize in 3D",
     "hero.deliveryBadge": "Delivery to 58 Wilayas",

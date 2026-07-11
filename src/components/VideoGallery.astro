@@ -1,0 +1,91 @@
+---
+// Video gallery showing the actual video ads with corresponding ad captions.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+
+const galleryTitle = {
+  fr: "Nos albums en action (Vidéos de nos Publicités)",
+  ar: "ألبوماتنا بالفيديو (من إعلاناتنا)",
+  en: "Our Albums in Action (From Our Ads)"
+};
+
+const captions = {
+  fr: [
+    "🎁 Offre spéciale : Photobook en bois à 3500 DA seulement ! On te fait un magnifique photobook personnalisé avec TES photos, imprimé avec qualité, solide, et avec une belle couverture en bois 💪✨",
+    "📸 CRÉEZ VOTRE PHOTOBOOK EN BOIS ! Vous voulez garder vos plus beaux souvenirs d'une manière spéciale ? Avec notre Photobook en bois, vous pouvez mettre vos propres photos dessus ! 🌟"
+  ],
+  ar: [
+    "🎁 عرض خاص: فوتوبوك خشبي بـ 3500 دج فقط! نصنع لك ألبوم صور مخصص ورائع بصورك الخاصة، مطبوع بجودة عالية، متين وبغطاء خشبي جميل 💪✨",
+    "📸 صمم ألبومك الخشبي الخاص! هل تريد الاحتفاظ بأجمل ذكرياتك بطريقة مميزة؟ مع ألبومنا الخشبي، يمكنك وضع صورك الخاصة عليه! 🌟"
+  ],
+  en: [
+    "🎁 Special offer: Wooden photobook for only 3500 DA! We make a beautiful custom photobook with YOUR photos, high quality printing, solid build, and a beautiful wooden cover 💪✨",
+    "📸 CREATE YOUR WOODEN PHOTOBOOK! Want to preserve your best memories in a special way? With our wooden photobook, you can put your own photos on it! 🌟"
+  ]
+};
+
+const currentTitle = galleryTitle[locale as "fr" | "ar" | "en"] || galleryTitle.fr;
+const currentCaptions = captions[locale as "fr" | "ar" | "en"] || captions.fr;
+---
+
+<section id="gallery" class="px-gutter py-section-padding bg-surface-container-low">
+  <div class="mx-auto max-w-container-max">
+    <div class="mb-12 text-center">
+      <h2 class="text-headline-lg font-bold text-on-background" dir={locale === "ar" ? "rtl" : "ltr"}>
+        {currentTitle}
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <!-- Video 1 -->
+      <div class="flex flex-col overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-md">
+        <div class="relative aspect-video bg-black">
+          <video
+            src="/ad_video_1.mp4"
+            poster="/ad_preview_1.jpg"
+            controls
+            preload="none"
+            class="h-full w-full object-contain"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between" dir={locale === "ar" ? "rtl" : "ltr"}>
+          <p class="text-body-md text-on-surface-variant leading-relaxed">
+            {currentCaptions[0]}
+          </p>
+          <div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center gap-2 text-accent">
+            <span class="material-symbols-outlined text-sm">local_shipping</span>
+            <span class="text-label-bold font-bold text-xs">{locale === "ar" ? "توصيل لـ 58 ولاية • الدفع عند الاستلام" : locale === "en" ? "Delivery to 58 Wilayas • Cash on Delivery" : "Livraison 58 Wilayas • Paiement à la livraison"}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="flex flex-col overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-md">
+        <div class="relative aspect-video bg-black">
+          <video
+            src="/ad_video_2.mp4"
+            poster="/ad_preview_2.jpg"
+            controls
+            preload="none"
+            class="h-full w-full object-contain"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between" dir={locale === "ar" ? "rtl" : "ltr"}>
+          <p class="text-body-md text-on-surface-variant leading-relaxed">
+            {currentCaptions[1]}
+          </p>
+          <div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center gap-2 text-accent">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            <span class="text-label-bold font-bold text-xs">{locale === "ar" ? "معاينة المنتج قبل الدفع مضمونة" : locale === "en" ? "Check product before payment guaranteed" : "Vérification du produit garantie avant de payer"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
