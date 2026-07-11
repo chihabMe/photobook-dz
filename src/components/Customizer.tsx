@@ -163,9 +163,9 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
   const price = (unitBasePrice + (activeSizeOption?.priceDelta ?? 0)) * qty;
 
   return (
-    <main className="mx-auto flex h-[calc(100vh-80px)] w-full max-w-container-max flex-col md:flex-row">
+    <main className="mx-auto flex w-full max-w-container-max flex-col md:flex-row md:h-[calc(100vh-80px)] md:overflow-hidden bg-surface">
       {/* 3D Preview */}
-      <section className="relative flex h-[380px] w-full items-center justify-center overflow-hidden bg-surface-container-low md:h-full md:w-2/3">
+      <section className="sticky top-[80px] z-30 flex h-[280px] w-full items-center justify-center overflow-hidden bg-surface-container-low border-b border-outline-variant/15 shadow-sm md:relative md:top-0 md:h-full md:w-2/3 md:border-b-0 md:shadow-none md:z-10">
         <div className="absolute left-4 top-4 z-10 rounded-lg border border-outline-variant/20 bg-surface/80 px-4 py-2 shadow-sm backdrop-blur-sm">
           <p className="text-label-bold flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-sm">360</span>
@@ -192,7 +192,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
       </section>
 
       {/* Controls Sidebar */}
-      <section className="relative z-20 flex h-auto w-full flex-col border-l border-outline-variant/10 bg-surface shadow-lg md:h-full md:w-1/3">
+      <section className="relative z-20 flex w-full flex-col bg-surface md:h-full md:w-1/3 md:border-l md:border-outline-variant/10 md:overflow-hidden">
         <div className="flex-shrink-0 border-b border-outline-variant/10 p-gutter">
           <h1 className="text-headline-md mb-2 text-on-surface">
             {t("custom.title")}
@@ -202,7 +202,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
           </p>
         </div>
 
-        <div className="flex-grow space-y-stack-lg overflow-y-auto p-gutter">
+        <div className="space-y-stack-lg p-gutter md:flex-grow md:overflow-y-auto">
           {/* Cover Material */}
           <fieldset className="space-y-stack-md">
             <legend className="text-label-bold uppercase tracking-wider text-on-surface">
@@ -405,12 +405,12 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
         </div>
 
         {/* Sticky Footer CTA */}
-        <div className="mt-auto flex-shrink-0 border-t border-outline-variant/10 bg-surface p-gutter">
+        <div className="border-t border-outline-variant/10 bg-surface/95 backdrop-blur-sm p-gutter sticky bottom-0 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] md:relative md:bottom-auto md:z-auto md:shadow-none md:bg-surface md:mt-auto md:flex-shrink-0">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-body-lg text-on-surface-variant">
               {t("custom.estimation")}
             </span>
-            <span className="text-headline-md text-on-surface" id="price_display">
+            <span className="text-headline-md text-on-surface font-extrabold" id="price_display">
               {formatDA(price)}
             </span>
           </div>
