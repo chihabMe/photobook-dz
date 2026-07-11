@@ -63,29 +63,25 @@ export const COVER_OPTIONS: CoverOption[] = [
 ];
 
 export const SIZE_OPTIONS: SizeOption[] = [
-  { value: "small", label: "Small", dims: "20x20 cm", priceDelta: 0, aspect: 1 },
-  {
-    value: "medium",
-    label: "Medium",
-    dims: "30x30 cm",
-    priceDelta: 1000,
-    aspect: 1,
-  },
-  {
-    value: "large",
-    label: "Large",
-    dims: "40x30 cm",
-    priceDelta: 2000,
-    aspect: 4 / 3,
-  },
+  { value: "small",  label: "Small",  dims: "20x20 cm", priceDelta: 0,    aspect: 1 },
+  { value: "medium", label: "Medium", dims: "30x20 cm", priceDelta: 500,  aspect: 1 },
+  { value: "large",  label: "Large",  dims: "40x30 cm", priceDelta: 1000, aspect: 4 / 3 },
 ];
 
-export const BASE_PRICE_DA = 3500;
+// Scraped from Facebook ads:
+// - 1 album  → 3,900 DA (base)
+// - 2+ albums → 3,500 DA / unit (bulk promo)
+export const BASE_PRICE_SINGLE_DA = 3900;
+export const BASE_PRICE_BULK_DA   = 3500; // 2+ units
 export const ENGRAVING_MAX = 30;
 
-export function priceFor(state: Pick<CustomizerState, "size">): number {
+export function priceFor(
+  state: Pick<CustomizerState, "size">,
+  quantity: number = 1
+): number {
+  const unitBase = quantity >= 2 ? BASE_PRICE_BULK_DA : BASE_PRICE_SINGLE_DA;
   const size = SIZE_OPTIONS.find((s) => s.value === state.size);
-  return BASE_PRICE_DA + (size?.priceDelta ?? 0);
+  return (unitBase + (size?.priceDelta ?? 0)) * quantity;
 }
 
 export function formatDA(amount: number): string {

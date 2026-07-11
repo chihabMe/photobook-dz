@@ -7,6 +7,7 @@ import {
   type FieldErrors,
   type OrderInput,
 } from "../lib/order";
+import { BASE_PRICE_SINGLE_DA, BASE_PRICE_BULK_DA, SIZE_OPTIONS } from "../three/customizerOptions";
 
 import { translations } from "../data/translations";
 
@@ -200,9 +201,14 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
 
   const qty = customization?.quantity || 1;
   const selectedCover = customization ? (config.coverOptions.find((c) => c.value === customization.cover) || config.coverOptions[0]) : null;
-  const selectedSize = customization ? (config.sizeOptions.find((s) => s.value === customization.size) || config.sizeOptions[0]) : null;
-  const unitBase = qty >= 2 ? 3500 : 3900;
-  const price = customization ? (unitBase + (selectedSize?.priceDelta ?? 0)) * qty : config.basePrice;
+  // Use SIZE_OPTIONS from customizerOptions as the source of truth for price deltas
+  const selectedSize = customization
+    ? SIZE_OPTIONS.find((s) => s.value === customization.size) ?? SIZE_OPTIONS[0]
+    : null;
+  const unitBase = qty >= 2 ? BASE_PRICE_BULK_DA : BASE_PRICE_SINGLE_DA;
+  const price = customization
+    ? (unitBase + (selectedSize?.priceDelta ?? 0)) * qty
+    : BASE_PRICE_SINGLE_DA;
 
   const inputBase =
     "w-full rounded-md border bg-surface px-4 py-3 text-body-md text-on-background outline-none transition-all focus:border-accent focus:ring-1 focus:ring-accent";

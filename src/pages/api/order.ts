@@ -76,13 +76,14 @@ export const POST: APIRoute = async ({ request }) => {
   const quantity = typeof body.quantity === "number" ? body.quantity : 1;
   const theme = typeof body.theme === "string" ? body.theme : "classic";
 
-  let price = 3500;
+  let price = 3900; // Default: single unit base price from ads
   try {
     const configRows = await sql`SELECT value FROM shop_config WHERE key = 'base_price_da'`;
-    const dbBasePrice = configRows[0] ? Number(configRows[0].value) : 3500;
-    
-    // Apply Weekend Promo: 1 photobook = 3900 DA, 2+ photobooks = 3500 DA / unit
-    const unitBasePrice = quantity >= 2 ? dbBasePrice : (dbBasePrice + 400);
+    const dbBulkPrice = configRows[0] ? Number(configRows[0].value) : 3500;
+    const dbSinglePrice = dbBulkPrice + 400; // Single always costs 400 DA more than bulk
+
+    // Apply pricing: 1 photobook = single price, 2+ = bulk price per unit
+    const unitBasePrice = quantity >= 2 ? dbBulkPrice : dbSinglePrice;
     price = unitBasePrice;
 
     if (size) {
@@ -93,9 +94,11 @@ export const POST: APIRoute = async ({ request }) => {
     }
     price = price * quantity;
   } catch (err) {
-    console.error("[order API] Failed to query dynamic pricing, using default price calculation:", err);
+    console.error("[order API] Failed to query dynamic pricing, using fallback:", err);
+    // Fallback mirrors the same logic without DB
     const fallbackBase = quantity >= 2 ? 3500 : 3900;
-    price = fallbackBase * quantity;
+    const sizeDelta = size === "large" ? 1000 : size === "medium" ? 500 : 0;
+    price = (fallbackBase + sizeDelta) * quantity;
   }
 
   const productBase = cover ? `photobook-${cover}-${size}-${theme}` : `photobook-bois-classique-${theme}`;
