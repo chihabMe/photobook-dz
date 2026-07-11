@@ -170,6 +170,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
             cover={state.cover}
             size={state.size}
             photoUrl={state.photoUrl}
+            engraving={state.engraving}
             coverOptions={config.coverOptions}
             sizeOptions={config.sizeOptions}
           />
