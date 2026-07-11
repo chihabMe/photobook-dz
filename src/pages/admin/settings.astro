@@ -1,0 +1,97 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { sql } from "../../db/client";
+
+export const prerender = false;
+
+// Handle POST actions for settings
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "update_config") {
+      const base_price = Number(formData.get("base_price"));
+      if (!isNaN(base_price)) {
+        await sql`
+          INSERT INTO shop_config (key, value) 
+          VALUES ('base_price_da', ${String(base_price)})
+          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+        `;
+      }
+    }
+  } catch (err) {
+    console.error("Settings update failed:", err);
+  }
+}
+
+// Fetch settings
+let basePrice = 3500;
+try {
+  const config = await sql`SELECT value FROM shop_config WHERE key = 'base_price_da'`;
+  if (config[0]) basePrice = Number(config[0].value);
+} catch (err) {
+  console.error("Fetch base price failed:", err);
+}
+---
+
+<AdminLayout title="Admin - Configuration" currentPath="/admin/settings">
+  <div class="max-w-2xl space-y-6">
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h1 class="text-headline-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+        <span class="material-symbols-outlined text-primary">settings</span>
+        Configuration Générale de la Boutique
+      </h1>
+      <p class="text-body-sm text-slate-500 mb-6 font-medium">Modifiez les réglages globaux du panier et les paramètres de tarification.</p>
+
+      <form method="POST" class="space-y-6">
+        <input type="hidden" name="action" value="update_config" />
+        
+        <div class="space-y-2">
+          <label htmlFor="base_price" class="block text-sm font-bold text-slate-700">Prix de base de l'album (Format Small) (DA)</label>
+          <p class="text-xs text-slate-400">Le tarif affiché au client pour le modèle le plus basique (sans suppléments de taille).</p>
+          <div class="relative max-w-xs">
+            <input 
+              id="base_price"
+              name="base_price" 
+              type="number" 
+              required 
+              value={basePrice}
+              class="w-full rounded-md border border-slate-300 bg-white pl-4 pr-12 py-3 text-body-md font-mono font-bold text-slate-800 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+              <span class="text-slate-400 font-bold text-sm">DA</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-6 flex justify-end">
+          <button 
+            type="submit" 
+            class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold text-sm transition-colors shadow-md"
+          >
+            Enregistrer les modifications
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {/* Pricing system guide card */}
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-inner space-y-4">
+      <h3 class="text-body-lg font-bold text-slate-800 flex items-center gap-2">
+        <span class="material-symbols-outlined text-slate-600">info</span>
+        Fonctionnement des tarifs :
+      </h3>
+      <div class="text-body-sm text-slate-600 space-y-2">
+        <p>Le calcul des prix de vente pour les photobooks suit la formule suivante :</p>
+        <div class="bg-white border border-slate-200 p-3 rounded-lg font-mono text-center text-primary font-bold">
+          Total = Prix de Base + Supplément de Taille
+        </div>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li>Le prix est recalculé et sécurisé côté serveur pour toutes les commandes.</li>
+          <li>Les prix modifiés ici s'appliquent immédiatement au catalogue client en temps réel.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</AdminLayout>

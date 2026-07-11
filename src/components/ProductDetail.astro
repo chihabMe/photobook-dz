@@ -1,0 +1,68 @@
+---
+// Product detail — split image/copy card. Price, feature bullets, premium tag.
+const productImg =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuCeRtik8Uz_qzkHI-i9Dk6vZCsr9kqieSCOyXaLFpfxmssS55788BqBhtPOVa2a2KSCmkoKxH216SN71rX-YE_8HkLvd4VOgYeAi10tK9X7k0a-cAAsV6k2HenMCdQTeFpirnrr_8CGGfd1advT6nJ8Vi4UtIuZyUn_69jgOWJSp9jZMZOXT7hCsO8BRt-SO-B72MeMnOTCJfBZ6pKMMwmQXLN7Ek6bM4tR3N7dtVc1zJgdfFvea-FXwA2LrKhmyVs9BbLMOHQe8uAl";
+
+const bullets = [
+  "Couverture rigide en bois naturel",
+  "Gravure laser personnalisée",
+  "Papier photo premium mat ou brillant",
+];
+---
+
+<section id="products" class="px-gutter py-section-padding">
+  <div
+    class="mx-auto flex max-w-container-max flex-col overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-card md:flex-row"
+  >
+    <div class="relative h-96 md:h-auto md:w-1/2">
+      <img
+        src={productImg}
+        alt="Gros plan sur la couverture bois du photobook montrant la texture du grain"
+        loading="lazy"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+    </div>
+
+    <div class="flex flex-col justify-center p-10 md:w-1/2 md:p-16">
+      <div class="mb-2 text-sm font-bold uppercase tracking-widest text-accent-deep">
+        Premium Collection
+      </div>
+      <h2 class="mb-4 text-headline-md font-bold text-on-background">
+        Le Photobook Bois Classique
+      </h2>
+      <p class="mb-8 text-body-lg text-on-surface-variant">
+        Immortalisez vos moments les plus précieux dans notre album phare.
+        Couverture en bois gravée personnalisable, pages épaisses de haute
+        qualité, reliure artisanale.
+      </p>
+
+      <div class="mb-8 flex items-end gap-4">
+        <span class="text-display-lg-mobile font-extrabold text-primary"
+          >3500 DA</span
+        >
+        <span class="mb-2 text-body-lg text-outline line-through">4900 DA</span>
+      </div>
+
+      <ul class="mb-8 space-y-3">
+        {
+          bullets.map((b) => (
+            <li class="flex items-center gap-3 text-body-md text-on-surface-variant">
+              <span class="material-symbols-outlined text-accent">
+                check_circle
+              </span>
+              {b}
+            </li>
+          ))
+        }
+      </ul>
+
+      <a
+        href="#order-form"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-8 py-4 text-button-text font-semibold text-white shadow-cta transition-colors hover:bg-accent-dark sm:w-auto"
+      >
+        <span class="material-symbols-outlined">shopping_cart</span>
+        Commander maintenant
+      </a>
+    </div>
+  </div>
+</section>

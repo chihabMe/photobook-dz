@@ -1,0 +1,127 @@
+---
+import { createHash } from "node:crypto";
+import Base from "./Base.astro";
+
+export const prerender = false;
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+const passwordHash = createHash("sha256").update(ADMIN_PASSWORD).digest("hex");
+
+const token = Astro.cookies.get("admin_token")?.value;
+const isAuthenticated = token === passwordHash;
+
+if (!isAuthenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const { title = "Admin Panel", currentPath = "" } = Astro.props;
+
+// Sidebar navigation items
+const navItems = [
+  { path: "/admin/orders", label: "Commandes", icon: "shopping_cart" },
+  { path: "/admin/covers", label: "Couvertures & Couleurs", icon: "palette" },
+  { path: "/admin/sizes", label: "Tailles & Tarifs", icon: "aspect_ratio" },
+  { path: "/admin/settings", label: "Configuration", icon: "settings" },
+];
+---
+
+<Base title={title} description="Administration de Photobook dz">
+  <div class="flex min-h-screen bg-slate-50">
+    {/* Sidebar Desktop */}
+    <aside class="hidden w-64 border-r border-slate-200 bg-slate-900 text-slate-300 md:flex md:flex-col">
+      <div class="flex h-20 items-center gap-3 border-b border-slate-800 px-6">
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+        </span>
+        <div>
+          <h2 class="text-body-lg font-bold text-white leading-none">Photobook dz</h2>
+          <span class="text-xs text-slate-500 font-medium">Administration</span>
+        </div>
+      </div>
+
+      <nav class="flex-grow space-y-1 p-4">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.path;
+          return (
+            <a
+              href={item.path}
+              class={`flex items-center gap-3 rounded-lg px-4 py-3 text-body-md font-semibold transition-colors ${
+                isActive
+                  ? "bg-primary text-white"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <span class="material-symbols-outlined text-xl">{item.icon}</span>
+              {item.label}
+            </a>
+          );
+        })}
+      </nav>
+
+      <div class="border-t border-slate-800 p-4">
+        <a
+          href="/"
+          class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors mb-2"
+        >
+          <span class="material-symbols-outlined text-lg">store</span>
+          Retourner au site
+        </a>
+
+        <form method="POST" action="/admin/login">
+          <input type="hidden" name="action" value="logout" />
+          <button
+            type="submit"
+            class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold text-error hover:bg-error-container/20 hover:text-error transition-colors"
+          >
+            <span class="material-symbols-outlined text-lg">logout</span>
+            Se déconnecter
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    {/* Mobile layout container */}
+    <div class="flex flex-1 flex-col">
+      {/* Top Navbar Mobile */}
+      <header class="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 md:hidden">
+        <div class="flex items-center gap-3">
+          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-on-primary">
+            <span class="material-symbols-outlined text-sm">photo_album</span>
+          </span>
+          <h2 class="text-body-lg font-bold text-slate-900">Photobook dz</h2>
+        </div>
+        <div class="flex gap-2">
+          {navItems.map((item) => {
+            const isActive = currentPath === item.path;
+            return (
+              <a
+                href={item.path}
+                title={item.label}
+                class={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                  isActive ? "bg-primary-container text-primary" : "text-slate-500"
+                }`}
+              >
+                <span class="material-symbols-outlined">{item.icon}</span>
+              </a>
+            );
+          })}
+          <form method="POST" action="/admin/login" class="inline">
+            <input type="hidden" name="action" value="logout" />
+            <button
+              type="submit"
+              title="Logout"
+              class="flex h-10 w-10 items-center justify-center rounded-lg text-error"
+            >
+              <span class="material-symbols-outlined">logout</span>
+            </button>
+          </form>
+        </div>
+      </header>
+
+      {/* Main Content Pane */}
+      <div class="flex-1 overflow-y-auto p-6 md:p-12">
+        <slot />
+      </div>
+    </div>
+  </div>
+</Base>

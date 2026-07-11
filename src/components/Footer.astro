@@ -1,0 +1,40 @@
+---
+// Site footer — brand, copyright, and secondary links.
+const links = [
+  { label: "About Us", href: "#" },
+  { label: "Contact Support", href: "#" },
+  { label: "Privacy Policy", href: "#" },
+  { label: "Shipping Terms", href: "#" },
+];
+const year = new Date().getFullYear();
+---
+
+<footer
+  class="mt-auto w-full border-t border-outline-variant/10 bg-surface-container-lowest"
+>
+  <div
+    class="mx-auto grid max-w-container-max grid-cols-1 gap-stack-lg px-gutter py-stack-lg md:grid-cols-2"
+  >
+    <div class="flex flex-col gap-4">
+      <span class="text-headline-md font-bold text-primary">Photobook dz</span>
+      <p class="text-body-md text-on-surface opacity-80">
+        © {year} Photobook dz. Preservation of memories across 58 Wilayas.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 md:items-end">
+      <nav class="flex flex-col gap-4 md:flex-row md:gap-8">
+        {
+          links.map((l) => (
+            <a
+              href={l.href}
+              class="text-body-md text-on-surface-variant opacity-80 transition-colors hover:text-primary hover:opacity-100"
+            >
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </div>
+</footer>

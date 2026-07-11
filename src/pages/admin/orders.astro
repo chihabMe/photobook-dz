@@ -1,0 +1,375 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { sql } from "../../db/client";
+import { WILAYAS } from "../../data/wilayas";
+
+export const prerender = false;
+
+// Handle POST actions (status update, delete)
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "update_status") {
+      const orderId = Number(formData.get("order_id"));
+      const newStatus = String(formData.get("status") ?? "").trim();
+      if (orderId && ["pending", "confirmed", "shipped", "delivered", "cancelled"].includes(newStatus)) {
+        await sql`
+          UPDATE orders 
+          SET status = ${newStatus}
+          WHERE id = ${orderId}
+        `;
+      }
+    } else if (action === "delete_order") {
+      const orderId = Number(formData.get("order_id"));
+      if (orderId) {
+        await sql`
+          DELETE FROM orders 
+          WHERE id = ${orderId}
+        `;
+      }
+    }
+  } catch (err) {
+    console.error("Order action failed:", err);
+  }
+}
+
+// Get filter params
+const search = Astro.url.searchParams.get("search") || "";
+const status = Astro.url.searchParams.get("status") || "";
+const wilaya = Astro.url.searchParams.get("wilaya") || "";
+
+const searchParam = search ? `%${search}%` : "";
+const statusParam = status || "";
+const wilayaParam = Number(wilaya) || 0;
+
+// Fetch config maps for nice labels
+let coversMap: Record<string, string> = {};
+let sizesMap: Record<string, string> = {};
+try {
+  const covers = await sql`SELECT value, label FROM cover_materials`;
+  const sizes = await sql`SELECT value, label FROM book_sizes`;
+  covers.forEach(c => { coversMap[c.value] = c.label; });
+  sizes.forEach(s => { sizesMap[s.value] = s.label; });
+} catch (err) {
+  console.error("Failed to load cover/size maps:", err);
+}
+
+// Fetch orders with dynamic filters
+let orders = [];
+try {
+  orders = await sql`
+    SELECT * FROM orders
+    WHERE 
+      (${search} = '' OR full_name ILIKE ${searchParam} OR phone LIKE ${searchParam} OR id::text = ${search})
+      AND (${status} = '' OR status = ${statusParam})
+      AND (${wilaya} = '' OR wilaya_code = ${wilayaParam})
+    ORDER BY created_at DESC
+    LIMIT 200
+  `;
+} catch (err) {
+  console.error("Fetch filtered orders failed:", err);
+}
+
+// Get counts for filters (all, pending, confirmed, shipped, delivered, cancelled)
+const counts = {
+  all: 0,
+  pending: 0,
+  confirmed: 0,
+  shipped: 0,
+  delivered: 0,
+  cancelled: 0
+};
+try {
+  const statusCounts = await sql`
+    SELECT status, count(*) as count 
+    FROM orders 
+    GROUP BY status
+  `;
+  statusCounts.forEach(row => {
+    const s = row.status as keyof typeof counts;
+    if (s in counts) {
+      counts[s] = Number(row.count);
+    }
+    counts.all += Number(row.count);
+  });
+} catch (err) {
+  console.error("Failed to fetch status counts:", err);
+}
+
+// Helper to determine status styling classes
+function getStatusClass(s: string) {
+  switch (s) {
+    case "pending":
+      return "bg-amber-50 text-amber-800 border-amber-200/60 focus:ring-amber-500";
+    case "confirmed":
+      return "bg-emerald-50 text-emerald-800 border-emerald-200/60 focus:ring-emerald-500";
+    case "shipped":
+      return "bg-sky-50 text-sky-800 border-sky-200/60 focus:ring-sky-500";
+    case "delivered":
+      return "bg-indigo-50 text-indigo-800 border-indigo-200/60 focus:ring-indigo-500";
+    case "cancelled":
+      return "bg-rose-50 text-rose-800 border-rose-200/60 focus:ring-rose-500";
+    default:
+      return "bg-slate-50 text-slate-800 border-slate-200 focus:ring-slate-500";
+  }
+}
+---
+
+<AdminLayout title="Admin - Commandes" currentPath="/admin/orders">
+  <div class="space-y-6">
+    {/* Page Header */}
+    <div>
+      <h1 class="text-headline-sm font-bold text-slate-900 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">shopping_cart</span>
+        Suivi des Commandes
+      </h1>
+      <p class="text-body-sm text-slate-500">Visualisez, filtrez, changez les statuts ou supprimez les commandes de vos clients.</p>
+    </div>
+
+    {/* Search & Filter controls */}
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+      <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        {/* Search */}
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Recherche</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+            <input 
+              type="text" 
+              name="search" 
+              value={search}
+              placeholder="Nom, tél, ID de commande..." 
+              class="w-full rounded border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+
+        {/* Wilaya Filter */}
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Filtrer par Wilaya</label>
+          <select 
+            name="wilaya" 
+            class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary text-slate-700"
+          >
+            <option value="">Toutes les Wilayas</option>
+            {WILAYAS.map(w => (
+              <option value={w.code} selected={Number(wilaya) === w.code}>
+                {w.code.toString().padStart(2, '0')} - {w.fr}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Keep status query param in form submissions */}
+        <input type="hidden" name="status" value={status} />
+
+        {/* Buttons */}
+        <div class="flex gap-2">
+          <button 
+            type="submit" 
+            class="flex-1 bg-primary hover:bg-primary-dark text-white py-2 rounded font-semibold text-sm transition-colors shadow-sm flex items-center justify-center gap-1"
+          >
+            <span class="material-symbols-outlined text-sm">filter_alt</span>
+            Filtrer
+          </button>
+          
+          {(search || wilaya || status) && (
+            <a 
+              href="/admin/orders" 
+              class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded text-sm font-semibold transition-colors flex items-center justify-center"
+              title="Réinitialiser"
+            >
+              <span class="material-symbols-outlined text-lg">close</span>
+            </a>
+          )}
+        </div>
+      </form>
+
+      {/* Filter Tabs / Status pills */}
+      <div class="border-t border-slate-100 pt-5">
+        <div class="flex flex-wrap gap-2">
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              !status 
+                ? "bg-slate-900 text-white border-slate-900" 
+                : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            Tous ({counts.all})
+          </a>
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}&status=pending`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1 ${
+              status === "pending" 
+                ? "bg-amber-600 text-white border-amber-600" 
+                : "bg-amber-50/50 text-amber-800 border-amber-200/50 hover:bg-amber-100/50"
+            }`}
+          >
+            En attente ({counts.pending})
+          </a>
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}&status=confirmed`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1 ${
+              status === "confirmed" 
+                ? "bg-emerald-600 text-white border-emerald-600" 
+                : "bg-emerald-50/50 text-emerald-800 border-emerald-200/50 hover:bg-emerald-100/50"
+            }`}
+          >
+            Confirmé ({counts.confirmed})
+          </a>
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}&status=shipped`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1 ${
+              status === "shipped" 
+                ? "bg-sky-600 text-white border-sky-600" 
+                : "bg-sky-50/50 text-sky-800 border-sky-200/50 hover:bg-sky-100/50"
+            }`}
+          >
+            Expédié ({counts.shipped})
+          </a>
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}&status=delivered`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1 ${
+              status === "delivered" 
+                ? "bg-indigo-600 text-white border-indigo-600" 
+                : "bg-indigo-50/50 text-indigo-800 border-indigo-200/50 hover:bg-indigo-100/50"
+            }`}
+          >
+            Livré ({counts.delivered})
+          </a>
+          <a 
+            href={`/admin/orders?search=${search}&wilaya=${wilaya}&status=cancelled`}
+            class={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1 ${
+              status === "cancelled" 
+                ? "bg-rose-600 text-white border-rose-600" 
+                : "bg-rose-50/50 text-rose-800 border-rose-200/50 hover:bg-rose-100/50"
+            }`}
+          >
+            Annulé ({counts.cancelled})
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Orders Table list */}
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left text-sm text-slate-700">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-label-bold text-slate-600">
+              <th class="p-4">ID</th>
+              <th class="p-4">Date</th>
+              <th class="p-4">Client</th>
+              <th class="p-4">Contact</th>
+              <th class="p-4">Destination</th>
+              <th class="p-4">Album</th>
+              <th class="p-4">Gravure</th>
+              <th class="p-4 text-right">Montant</th>
+              <th class="p-4 text-center">Statut</th>
+              <th class="p-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {orders.map((o) => {
+              const wilayaObj = WILAYAS.find(w => w.code === o.wilaya_code);
+              const formattedDate = new Date(o.created_at).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+              
+              const coverLabel = coversMap[o.cover] || o.cover || "Bois";
+              const sizeLabel = sizesMap[o.size] || o.size || "Moyen";
+
+              return (
+                <tr class="hover:bg-slate-50/40">
+                  <td class="p-4 font-mono font-bold text-primary">#{o.id}</td>
+                  <td class="p-4 text-xs text-slate-500 whitespace-nowrap">{formattedDate}</td>
+                  <td class="p-4 font-bold text-slate-900 whitespace-nowrap">{o.full_name}</td>
+                  <td class="p-4">
+                    <a 
+                      href={`tel:${o.phone}`}
+                      class="inline-flex items-center gap-1 font-mono text-slate-600 hover:text-primary hover:underline transition-colors font-medium whitespace-nowrap"
+                    >
+                      <span class="material-symbols-outlined text-xs">phone</span>
+                      {o.phone}
+                    </a>
+                  </td>
+                  <td class="p-4">
+                    <span class="block font-semibold text-slate-800">{o.commune}</span>
+                    <span class="text-xs text-slate-500">
+                      {o.wilaya_code.toString().padStart(2, '0')} - {wilayaObj?.fr || 'Wilaya'}
+                    </span>
+                  </td>
+                  <td class="p-4">
+                    <div class="space-y-0.5">
+                      <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        {coverLabel}
+                      </span>
+                      <span class="block text-xs font-semibold text-slate-500 font-mono">
+                        {sizeLabel}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="p-4 font-mono text-xs italic text-accent font-semibold max-w-[120px] truncate" title={o.engraving}>
+                    {o.engraving ? `"${o.engraving}"` : "-"}
+                  </td>
+                  <td class="p-4 font-bold text-right text-slate-900 whitespace-nowrap">
+                    {o.price_da?.toLocaleString("fr-FR")} DA
+                  </td>
+                  <td class="p-4">
+                    <form method="POST" class="flex justify-center">
+                      <input type="hidden" name="action" value="update_status" />
+                      <input type="hidden" name="order_id" value={o.id} />
+                      <select 
+                        name="status" 
+                        onchange="this.form.submit()" 
+                        class={`rounded border px-2.5 py-1 text-xs font-bold shadow-sm outline-none cursor-pointer transition-all ${getStatusClass(o.status)}`}
+                      >
+                        <option value="pending" selected={o.status === "pending"}>En attente</option>
+                        <option value="confirmed" selected={o.status === "confirmed"}>Confirmé</option>
+                        <option value="shipped" selected={o.status === "shipped"}>Expédié</option>
+                        <option value="delivered" selected={o.status === "delivered"}>Livré</option>
+                        <option value="cancelled" selected={o.status === "cancelled"}>Annulé</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="p-4">
+                    <div class="flex justify-center">
+                      <form 
+                        method="POST" 
+                        onsubmit={`return confirm('Voulez-vous vraiment supprimer définitivement la commande #${o.id} de ${o.full_name} ?')`}
+                      >
+                        <input type="hidden" name="action" value="delete_order" />
+                        <input type="hidden" name="order_id" value={o.id} />
+                        <button 
+                          type="submit" 
+                          class="rounded p-1 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center justify-center border border-transparent hover:border-rose-100"
+                          title="Supprimer la commande"
+                        >
+                          <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {orders.length === 0 && (
+              <tr>
+                <td colspan="10" class="p-16 text-center text-slate-400 italic">
+                  <span class="material-symbols-outlined text-3xl mb-1 block">info</span>
+                  Aucune commande ne correspond aux filtres actifs.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</AdminLayout>

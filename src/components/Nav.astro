@@ -1,0 +1,63 @@
+---
+// Sticky top navigation bar. Bilingual FR nav links + green "Order Now" CTA.
+---
+
+<header
+  class="bg-surface/90 backdrop-blur-md sticky top-0 z-50 w-full border-b border-outline-variant/10 shadow-sm"
+>
+  <div
+    class="mx-auto flex max-w-container-max items-center justify-between px-gutter py-4"
+  >
+    <a href="#top" class="flex items-center gap-4">
+      <span
+        class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm"
+      >
+        <span class="material-symbols-outlined">photo_album</span>
+      </span>
+      <span
+        class="text-display-lg-mobile font-display font-extrabold tracking-tight text-primary"
+      >
+        Photobook dz
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-8 md:flex">
+      <a
+        href="#products"
+        class="text-label-bold border-b-2 border-primary pb-1 font-bold text-primary"
+        >Products</a
+      >
+      <a
+        href="/customizer"
+        class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
+        >Customize 3D</a
+      >
+      <a
+        href="#why-us"
+        class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
+        >Why Us</a
+      >
+      <a
+        href="#reviews"
+        class="text-label-bold font-bold text-secondary transition-colors hover:text-primary"
+        >Reviews</a
+      >
+    </nav>
+
+    <a
+      href="#order-form"
+      class="hidden items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark md:flex"
+    >
+      Order Now
+    </a>
+
+    <!-- Mobile: CTA shrinks to icon -->
+    <a
+      href="#order-form"
+      aria-label="Commander"
+      class="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white shadow-cta md:hidden"
+    >
+      <span class="material-symbols-outlined">shopping_cart</span>
+    </a>
+  </div>
+</header>

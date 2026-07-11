@@ -1,0 +1,114 @@
+---
+// Hero section. Left: bilingual headline + COD trust line + pulsing CTA.
+// Right: product showcase — currently a static poster; the lazy 3D photobook
+// canvas mounts here in a later phase, using this image as its fallback.
+import PhotobookMount from "../three/PhotobookMount.tsx";
+
+const heroImg =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuCeRtik8Uz_qzkHI-i9Dk6vZCsr9kqieSCOyXaLFpfxmssS55788BqBhtPOVa2a2KSCmkoKxH216SN71rX-YE_8HkLvd4VOgYeAi10tK9X7k0a-cAAsV6k2HenMCdQTeFpirnrr_8CGGfd1advT6nJ8Vi4UtIuZyUn_69jgOWJSp9jZMZOXT7hCsO8BRt-SO-B72MeMnOTCJfBZ6pKMMwmQXLN7Ek6bM4tR3N7dtVc1zJgdfFvea-FXwA2LrKhmyVs9BbLMOHQe8uAl";
+---
+
+<section
+  id="top"
+  class="relative overflow-hidden px-gutter py-section-padding"
+>
+  <!-- Decorative blurred blobs -->
+  <div
+    class="absolute right-0 top-0 -mr-32 -mt-32 z-0 h-96 w-96 rounded-full bg-surface-variant opacity-50 mix-blend-multiply blur-3xl"
+  >
+  </div>
+  <div
+    class="absolute bottom-0 left-0 -mb-32 -ml-32 z-0 h-80 w-80 rounded-full bg-surface-container-high opacity-50 mix-blend-multiply blur-3xl"
+  >
+  </div>
+
+  <div
+    class="relative z-10 mx-auto grid max-w-container-max grid-cols-1 items-center gap-12 lg:grid-cols-2"
+  >
+    <!-- Copy -->
+    <div class="flex flex-col gap-6 text-center lg:text-left">
+      <h1 class="text-display-lg-mobile font-extrabold text-on-background md:text-display-lg">
+        Sublimez votre quotidien avec <span class="text-accent-deep"
+          >Photobook dz</span
+        >
+        <span
+          dir="rtl"
+          class="mt-4 block text-headline-md font-bold text-secondary"
+        >
+          اكتشفوا تشكيلة Photobook dz الرائعة
+        </span>
+      </h1>
+
+      <p
+        class="mx-auto max-w-xl text-body-lg text-on-surface-variant lg:mx-0"
+      >
+        Livraison 58 wilayas disponible. Paiement sécurisé à la réception
+        (COD). Vérification du produit garantie.
+      </p>
+
+      <div
+        class="mt-4 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start"
+      >
+        <a
+          href="#order-form"
+          class="pulse-green flex min-h-[56px] w-full items-center justify-center gap-2 rounded-md bg-accent px-8 py-4 text-button-text font-semibold text-white shadow-lg transition-colors hover:bg-accent-dark sm:w-auto"
+        >
+          <span class="material-symbols-outlined">shopping_cart</span>
+          Order Now / اطلب الآن
+        </a>
+        <a
+          href="/customizer"
+          class="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-md border border-outline-variant bg-surface px-8 py-4 text-button-text font-semibold text-on-surface transition-colors hover:bg-surface-container-low sm:w-auto"
+        >
+          <span class="material-symbols-outlined">view_in_ar</span>
+          Personnaliser en 3D
+        </a>
+      </div>
+    </div>
+
+    <!-- Product showcase -->
+    <div class="relative" data-hero-showcase>
+      <div
+        class="group relative aspect-[4/3] overflow-hidden rounded-xl shadow-2xl"
+      >
+        <!-- Poster: server-rendered for LCP/SEO, and the fallback whenever the
+             3D canvas is gated off. -->
+        <img
+          src={heroImg}
+          alt="Photobook premium à couverture bois, entrouvert sur des photos de famille"
+          loading="eager"
+          class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div
+          class="absolute inset-0 z-[1] bg-gradient-to-t from-black/40 to-transparent"
+        >
+        </div>
+
+        <!-- Interactive 3D photobook, mounted client-side only on capable
+             devices; fades in over the poster. -->
+        <PhotobookMount client:only="react" />
+      </div>
+
+      <!-- Floating badge: delivery -->
+      <div
+        class="absolute -bottom-6 -left-6 flex animate-bounce items-center gap-3 rounded-md border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-float"
+        style="animation-duration: 3s;"
+      >
+        <span class="text-2xl">📦</span>
+        <span class="text-label-bold font-bold text-on-background"
+          >Livraison 58 Wilayas</span
+        >
+      </div>
+
+      <!-- Floating badge: COD -->
+      <div
+        class="absolute -right-6 -top-6 hidden items-center gap-3 rounded-md border border-accent/20 bg-accent-tint p-4 shadow-float md:flex"
+      >
+        <span class="text-2xl">🤝</span>
+        <span class="text-label-bold font-bold text-accent-deep"
+          >Paiement à la livraison</span
+        >
+      </div>
+    </div>
+  </div>
+</section>

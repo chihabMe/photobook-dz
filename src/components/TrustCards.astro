@@ -1,0 +1,67 @@
+---
+// Trust features grid — 3 cards (delivery, COD, verified product).
+// Bilingual FR + Arabic, middle card highlighted in accent tint.
+const features = [
+  {
+    icon: "📦",
+    fr: "Livraison 58 Wilayas",
+    ar: "توصيل سريع",
+    desc: "Partout en Algérie, directement à votre porte.",
+    highlight: false,
+  },
+  {
+    icon: "🤝",
+    fr: "Paiement à la Livraison",
+    ar: "الدفع عند الاستلام",
+    desc: "Payez en toute sécurité uniquement à la réception.",
+    highlight: true,
+  },
+  {
+    icon: "✅",
+    fr: "Produit Garanti",
+    ar: "فحص السلعة",
+    desc: "Vérifiez votre photobook avant de payer. Satisfaction totale.",
+    highlight: false,
+  },
+];
+---
+
+<section id="why-us" class="bg-surface-container-lowest px-gutter py-section-padding">
+  <div class="mx-auto max-w-container-max">
+    <div class="mb-16 text-center">
+      <h2 class="mb-4 text-headline-md font-bold text-on-background">
+        Pourquoi Choisir Photobook dz ?
+      </h2>
+      <p class="text-body-md text-on-surface-variant">
+        La garantie d'un service premium pour vos souvenirs.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+      {
+        features.map((f) => (
+          <div
+            class:list={[
+              "glass-card flex flex-col items-center gap-4 rounded-xl p-8 text-center",
+              f.highlight && "border-accent/20 bg-accent-tint/30",
+            ]}
+          >
+            <div
+              class:list={[
+                "mb-2 flex h-16 w-16 items-center justify-center rounded-full text-3xl",
+                f.highlight ? "bg-accent-tint" : "bg-surface-container",
+              ]}
+            >
+              {f.icon}
+            </div>
+            <h3 class="text-lg font-bold text-on-background">{f.fr}</h3>
+            <p dir="rtl" class="text-body-md text-on-surface-variant">
+              {f.ar}
+            </p>
+            <p class="mt-2 text-sm text-secondary">{f.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

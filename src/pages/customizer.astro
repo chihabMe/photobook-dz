@@ -1,0 +1,39 @@
+---
+import Base from "../layouts/Base.astro";
+import Customizer from "../components/Customizer.tsx";
+---
+
+<Base
+  title="Photobook dz — Personnalisez votre album en 3D"
+  description="Concevez votre photobook en direct : matière de couverture, taille, gravure et votre propre photo, visualisés en 3D. Paiement à la livraison, 58 wilayas."
+>
+  <header
+    class="sticky top-0 z-50 w-full border-b border-outline-variant/10 bg-surface/90 shadow-sm backdrop-blur-md"
+  >
+    <div
+      class="mx-auto flex h-[80px] max-w-container-max items-center justify-between px-gutter"
+    >
+      <a href="/" class="flex items-center gap-4">
+        <span
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm"
+        >
+          <span class="material-symbols-outlined">photo_album</span>
+        </span>
+        <span
+          class="text-display-lg-mobile font-display font-extrabold tracking-tight text-primary"
+        >
+          Photobook dz
+        </span>
+      </a>
+
+      <a
+        href="/#order-form"
+        class="flex items-center justify-center rounded-full bg-accent px-6 py-3 text-button-text font-semibold text-white shadow-cta transition-all hover:bg-accent-dark"
+      >
+        Order Now
+      </a>
+    </div>
+  </header>
+
+  <Customizer client:only="react" />
+</Base>

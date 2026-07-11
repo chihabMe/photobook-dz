@@ -1,0 +1,224 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { sql } from "../../db/client";
+
+export const prerender = false;
+
+// Handle POST actions for covers
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "update_cover") {
+      const id = Number(formData.get("id"));
+      const label = String(formData.get("label") ?? "").trim();
+      const sub = String(formData.get("sub") ?? "").trim();
+      const color = String(formData.get("color") ?? "").trim();
+      const is_active = formData.get("is_active") === "true";
+
+      if (label && color) {
+        await sql`
+          UPDATE cover_materials 
+          SET label = ${label}, sub = ${sub}, color = ${color}, is_active = ${is_active}
+          WHERE id = ${id}
+        `;
+      }
+    } else if (action === "add_cover") {
+      const value = String(formData.get("value") ?? "").trim().toLowerCase();
+      const label = String(formData.get("label") ?? "").trim();
+      const sub = String(formData.get("sub") ?? "").trim();
+      const color = String(formData.get("color") ?? "").trim();
+
+      if (value && label && color) {
+        await sql`
+          INSERT INTO cover_materials (value, label, sub, color)
+          VALUES (${value}, ${label}, ${sub}, ${color})
+          ON CONFLICT (value) DO UPDATE SET
+            label = EXCLUDED.label,
+            sub = EXCLUDED.sub,
+            color = EXCLUDED.color,
+            is_active = true
+        `;
+      }
+    }
+  } catch (err) {
+    console.error("Cover action failed:", err);
+  }
+}
+
+// Fetch covers
+let covers = [];
+try {
+  covers = await sql`SELECT * FROM cover_materials ORDER BY id ASC`;
+} catch (err) {
+  console.error("Fetch covers failed:", err);
+}
+---
+
+<AdminLayout title="Admin - Couvertures" currentPath="/admin/covers">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {/* List & Edit existing covers */}
+    <div class="lg:col-span-2 space-y-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-headline-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+          <span class="material-symbols-outlined text-primary">palette</span>
+          Matières & Couleurs de Couverture
+        </h1>
+        <p class="text-body-sm text-slate-500 mb-6">Activez, modifiez ou configurez les matières disponibles dans le configurateur 3D.</p>
+
+        <div class="space-y-6">
+          {covers.map((c) => (
+            <form method="POST" class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-4 shadow-sm hover:border-slate-300 transition-all">
+              <input type="hidden" name="action" value="update_cover" />
+              <input type="hidden" name="id" value={c.id} />
+              
+              <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                <span class="font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-bold tracking-wide uppercase">{c.value}</span>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-semibold text-slate-500">Statut du modèle :</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      name="is_active" 
+                      value="true" 
+                      checked={c.is_active} 
+                      class="sr-only peer"
+                      onChange="this.form.submit()" 
+                    />
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <span class="ml-2 text-sm font-semibold text-slate-700">{c.is_active ? 'Actif' : 'Inactif'}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Nom Public (FR)</label>
+                  <input 
+                    type="text" 
+                    name="label" 
+                    value={c.label} 
+                    required 
+                    class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-primary" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Couleur 3D (Teinte de l'album)</label>
+                  <input type="hidden" id={`color-hidden-${c.id}`} name="color" value={c.color} />
+                  <div class="flex gap-2 items-center">
+                    <input 
+                      type="color" 
+                      id={`color-picker-${c.id}`} 
+                      value={c.color} 
+                      class="h-9 w-12 border border-slate-300 rounded cursor-pointer p-0 bg-transparent"
+                      oninput={`document.getElementById('color-text-${c.id}').value=this.value; document.getElementById('color-hidden-${c.id}').value=this.value;`}
+                    />
+                    <input 
+                      type="text" 
+                      id={`color-text-${c.id}`} 
+                      value={c.color}
+                      placeholder="#ffffff" 
+                      class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-mono outline-none focus:border-primary" 
+                      oninput={`document.getElementById('color-hidden-${c.id}').value=this.value; const p=document.getElementById('color-picker-${c.id}'); if(/^#[0-9A-Fa-f]{6}$/.test(this.value)) p.value=this.value;`}
+                    />
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Description / Subtitle</label>
+                  <input 
+                    type="text" 
+                    name="sub" 
+                    value={c.sub} 
+                    class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-primary" 
+                  />
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button 
+                  type="submit" 
+                  class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded font-semibold text-sm transition-colors shadow-sm"
+                >
+                  Mettre à jour
+                </button>
+              </div>
+            </form>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Add Cover material form */}
+    <div class="space-y-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-title-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">
+          Créer un modèle
+        </h2>
+        <p class="text-body-sm text-slate-500 mb-6">Ajoutez une nouvelle matière qui s'affichera instantanément dans les options du client.</p>
+
+        <form method="POST" class="space-y-4">
+          <input type="hidden" name="action" value="add_cover" />
+          
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Identifiant Technique (ex: linen)</label>
+            <input 
+              type="text" 
+              name="value" 
+              placeholder="linen" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary font-mono" 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nom / Label public</label>
+            <input 
+              type="text" 
+              name="label" 
+              placeholder="Lin Naturel" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary" 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Couleur 3D</label>
+            <input type="hidden" id="new-color-hidden" name="color" value="#e3dcd3" />
+            <div class="flex gap-2 items-center">
+              <input 
+                type="color" 
+                id="new-color-picker" 
+                value="#e3dcd3" 
+                class="h-9 w-12 border border-slate-300 rounded cursor-pointer p-0 bg-transparent"
+                oninput="document.getElementById('new-color-text').value=this.value; document.getElementById('new-color-hidden').value=this.value;"
+              />
+              <input 
+                type="text" 
+                id="new-color-text" 
+                value="#e3dcd3" 
+                placeholder="#e3dcd3" 
+                class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-mono outline-none focus:border-primary" 
+                oninput="document.getElementById('new-color-hidden').value=this.value; const p=document.getElementById('new-color-picker'); if(/^#[0-9A-Fa-f]{6}$/.test(this.value)) p.value=this.value;"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Description (Ligne info client)</label>
+            <input 
+              type="text" 
+              name="sub" 
+              placeholder="Matière organique & robuste" 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary" 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-semibold text-sm transition-colors shadow-md mt-4"
+          >
+            Créer la matière
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</AdminLayout>

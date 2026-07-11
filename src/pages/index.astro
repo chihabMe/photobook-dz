@@ -1,0 +1,28 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import TrustCards from "../components/TrustCards.astro";
+import ProductDetail from "../components/ProductDetail.astro";
+import Footer from "../components/Footer.astro";
+import OrderForm from "../components/OrderForm.tsx";
+---
+
+<Base>
+  <Nav />
+  <main class="flex-grow">
+    <Hero />
+    <TrustCards />
+    <ProductDetail />
+
+    <section
+      id="order-form"
+      class="bg-surface-variant/30 px-gutter py-section-padding"
+    >
+      <div class="mx-auto max-w-3xl">
+        <OrderForm client:visible />
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

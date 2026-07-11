@@ -1,0 +1,229 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { sql } from "../../db/client";
+
+export const prerender = false;
+
+// Handle POST actions for sizes
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "update_size") {
+      const id = Number(formData.get("id"));
+      const label = String(formData.get("label") ?? "").trim();
+      const dims = String(formData.get("dims") ?? "").trim();
+      const price_delta = Number(formData.get("price_delta"));
+      const is_active = formData.get("is_active") === "true";
+
+      if (label && dims) {
+        await sql`
+          UPDATE book_sizes 
+          SET label = ${label}, dims = ${dims}, price_delta = ${price_delta}, is_active = ${is_active}
+          WHERE id = ${id}
+        `;
+      }
+    } else if (action === "add_size") {
+      const value = String(formData.get("value") ?? "").trim().toLowerCase();
+      const label = String(formData.get("label") ?? "").trim();
+      const dims = String(formData.get("dims") ?? "").trim();
+      const price_delta = Number(formData.get("price_delta"));
+      const aspect = Number(formData.get("aspect") || 1.0);
+
+      if (value && label && dims) {
+        await sql`
+          INSERT INTO book_sizes (value, label, dims, price_delta, aspect)
+          VALUES (${value}, ${label}, ${dims}, ${price_delta}, ${aspect})
+          ON CONFLICT (value) DO UPDATE SET
+            label = EXCLUDED.label,
+            dims = EXCLUDED.dims,
+            price_delta = EXCLUDED.price_delta,
+            aspect = EXCLUDED.aspect,
+            is_active = true
+        `;
+      }
+    }
+  } catch (err) {
+    console.error("Size action failed:", err);
+  }
+}
+
+// Fetch sizes
+let sizes = [];
+try {
+  sizes = await sql`SELECT * FROM book_sizes ORDER BY id ASC`;
+} catch (err) {
+  console.error("Fetch sizes failed:", err);
+}
+---
+
+<AdminLayout title="Admin - Tailles & Tarifs" currentPath="/admin/sizes">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {/* List & Edit existing sizes */}
+    <div class="lg:col-span-2 space-y-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-headline-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+          <span class="material-symbols-outlined text-primary">aspect_ratio</span>
+          Dimensions & Suppléments de Tarifs
+        </h1>
+        <p class="text-body-sm text-slate-500 mb-6">Modifiez les dimensions des albums et déterminez le coût additionnel lié à chaque format.</p>
+
+        <div class="space-y-6">
+          {sizes.map((s) => (
+            <form method="POST" class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-4 shadow-sm hover:border-slate-300 transition-all">
+              <input type="hidden" name="action" value="update_size" />
+              <input type="hidden" name="id" value={s.id} />
+              
+              <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                <span class="font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-bold tracking-wide uppercase">{s.value}</span>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-semibold text-slate-500">Statut du format :</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      name="is_active" 
+                      value="true" 
+                      checked={s.is_active} 
+                      class="sr-only peer"
+                      onChange="this.form.submit()" 
+                    />
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <span class="ml-2 text-sm font-semibold text-slate-700">{s.is_active ? 'Actif' : 'Inactif'}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Nom / Label Taille</label>
+                  <input 
+                    type="text" 
+                    name="label" 
+                    value={s.label} 
+                    required 
+                    class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-primary" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Dimensions Réelles (Texte)</label>
+                  <input 
+                    type="text" 
+                    name="dims" 
+                    value={s.dims} 
+                    required 
+                    placeholder="30x30 cm"
+                    class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-primary" 
+                  />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Supplément de prix (DA) (Ajouté au prix de base)</label>
+                  <div class="relative">
+                    <input 
+                      type="number" 
+                      name="price_delta" 
+                      value={s.price_delta} 
+                      required 
+                      class="w-full rounded border border-slate-300 bg-white pl-3 pr-10 py-2 text-sm text-slate-800 outline-none focus:border-primary font-mono font-semibold" 
+                    />
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span class="text-slate-400 text-xs font-semibold">DA</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button 
+                  type="submit" 
+                  class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded font-semibold text-sm transition-colors shadow-sm"
+                >
+                  Mettre à jour
+                </button>
+              </div>
+            </form>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Add Size form */}
+    <div class="space-y-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-title-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">
+          Créer un format
+        </h2>
+        <p class="text-body-sm text-slate-500 mb-6">Ajoutez une nouvelle option de taille avec son ratio 3D et son prix additionnel.</p>
+
+        <form method="POST" class="space-y-4">
+          <input type="hidden" name="action" value="add_size" />
+          
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Identifiant Unique (ex: pocket)</label>
+            <input 
+              type="text" 
+              name="value" 
+              placeholder="pocket" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary font-mono" 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nom / Label public</label>
+            <input 
+              type="text" 
+              name="label" 
+              placeholder="Pocket Edition" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary" 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Dimensions réelles (Libellé)</label>
+            <input 
+              type="text" 
+              name="dims" 
+              placeholder="15x15 cm" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary" 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Ratio d'aspect 3D (Largeur/Profondeur)</label>
+            <input 
+              type="number" 
+              step="0.001" 
+              name="aspect" 
+              placeholder="1.0" 
+              required 
+              class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary font-mono" 
+            />
+            <span class="text-xs text-slate-400 mt-1 block">1.0 = Carré, 1.33 = Paysage (4:3), 0.75 = Portrait (3:4)</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Supplément de prix (DA)</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                name="price_delta" 
+                placeholder="500" 
+                required 
+                class="w-full rounded border border-slate-300 bg-white pl-3 pr-10 py-2 text-sm outline-none focus:border-primary font-mono" 
+              />
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span class="text-slate-400 text-xs">DA</span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-semibold text-sm transition-colors shadow-md mt-4"
+          >
+            Créer la taille
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
