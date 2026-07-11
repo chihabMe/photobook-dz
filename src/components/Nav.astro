@@ -119,75 +119,76 @@ function getSwitchUrl(target: string) {
       </div>
     </div>
   </div>
-
-  {/* Mobile Menu Drawer Overlay */}
-  <div
-    id="mobile-menu-drawer"
-    class="fixed inset-x-0 bottom-0 top-[80px] z-40 hidden w-full bg-surface-container-lowest border-t border-outline-variant/10 shadow-lg md:hidden"
-  >
-    <div class="flex h-full flex-col p-6 space-y-6 overflow-y-auto">
-      {/* Drawer Links */}
-      <nav class="flex flex-col gap-4 text-center">
-        <a
-          href={localUrl("#products")}
-          class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
-          >{t("nav.products")}</a
-        >
-        <a
-          href={localUrl("/customizer")}
-          class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
-          >{t("nav.customizer")}</a
-        >
-        <a
-          href={localUrl("#why-us")}
-          class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
-          >{t("nav.whyUs")}</a
-        >
-        <a
-          href={localUrl("#reviews")}
-          class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
-          >{t("nav.reviews")}</a
-        >
-      </nav>
-
-      {/* Language Switcher inside Drawer */}
-      <div class="flex flex-col items-center gap-3 pt-4 border-t border-outline-variant/10">
-        <span class="text-xs text-on-surface-variant font-semibold">
-          {locale === "ar" ? "لغة الموقع" : locale === "en" ? "Language" : "Langue du site"}
-        </span>
-        <div class="flex items-center rounded-lg bg-surface-container-low p-1 border border-outline-variant/10 w-full max-w-[280px] justify-between">
-          <a 
-            href={getSwitchUrl("fr")} 
-            class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "fr" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
-          >
-            FR
-          </a>
-          <a 
-            href={getSwitchUrl("ar")} 
-            class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "ar" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
-          >
-            عربي
-          </a>
-          <a 
-            href={getSwitchUrl("en")} 
-            class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "en" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
-          >
-            EN
-          </a>
-        </div>
-      </div>
-
-      {/* Large CTA Button inside Drawer */}
-      <a
-        href={localUrl("#order-form")}
-        class="mobile-nav-link flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-4 text-button-text font-bold text-white shadow-cta transition-colors hover:bg-accent-dark text-center"
-      >
-        <span class="material-symbols-outlined text-lg">shopping_cart</span>
-        {t("nav.orderNow")}
-      </a>
-    </div>
-  </div>
 </header>
+
+{/* Mobile Menu Drawer — rendered OUTSIDE header to escape its stacking context */}
+<div
+  id="mobile-menu-drawer"
+  class="fixed inset-x-0 bottom-0 top-[80px] z-[9999] hidden w-full bg-surface-container-lowest border-t border-outline-variant/10 shadow-2xl md:hidden"
+  style="overscroll-behavior: contain;"
+>
+  <div class="flex h-full flex-col p-6 space-y-6 overflow-y-auto">
+    {/* Drawer Links */}
+    <nav class="flex flex-col gap-4 text-center">
+      <a
+        href={localUrl("#products")}
+        class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
+        >{t("nav.products")}</a
+      >
+      <a
+        href={localUrl("/customizer")}
+        class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
+        >{t("nav.customizer")}</a
+      >
+      <a
+        href={localUrl("#why-us")}
+        class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
+        >{t("nav.whyUs")}</a
+      >
+      <a
+        href={localUrl("#reviews")}
+        class="mobile-nav-link text-headline-sm font-bold text-secondary py-3 hover:text-primary border-b border-outline-variant/5"
+        >{t("nav.reviews")}</a
+      >
+    </nav>
+
+    {/* Language Switcher inside Drawer */}
+    <div class="flex flex-col items-center gap-3 pt-4 border-t border-outline-variant/10">
+      <span class="text-xs text-on-surface-variant font-semibold">
+        {locale === "ar" ? "لغة الموقع" : locale === "en" ? "Language" : "Langue du site"}
+      </span>
+      <div class="flex items-center rounded-lg bg-surface-container-low p-1 border border-outline-variant/10 w-full max-w-[280px] justify-between">
+        <a 
+          href={getSwitchUrl("fr")} 
+          class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "fr" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          FR
+        </a>
+        <a 
+          href={getSwitchUrl("ar")} 
+          class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "ar" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          عربي
+        </a>
+        <a 
+          href={getSwitchUrl("en")} 
+          class={`text-sm font-extrabold flex-1 text-center py-2 rounded transition-colors ${locale === "en" ? "bg-primary text-white shadow-sm" : "text-secondary hover:text-primary"}`}
+        >
+          EN
+        </a>
+      </div>
+    </div>
+
+    {/* Large CTA Button inside Drawer */}
+    <a
+      href={localUrl("#order-form")}
+      class="mobile-nav-link flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-4 text-button-text font-bold text-white shadow-cta transition-colors hover:bg-accent-dark text-center"
+    >
+      <span class="material-symbols-outlined text-lg">shopping_cart</span>
+      {t("nav.orderNow")}
+    </a>
+  </div>
+</div>
 
 <script>
   const toggleBtn = document.getElementById("mobile-menu-toggle");
