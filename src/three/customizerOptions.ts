@@ -9,9 +9,8 @@ export interface CustomizerState {
   cover: string;
   size: string;
   engraving: string;
-  // Object URL for the user-uploaded cover photo. Frontend-only: never
-  // sent to the server or persisted — it lives only in the browser tab.
   photoUrl: string | null;
+  quantity?: number;
 }
 
 export interface CoverOption {

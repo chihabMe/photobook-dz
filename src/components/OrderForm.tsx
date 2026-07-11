@@ -33,6 +33,7 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     cover?: string;
     size?: string;
     engraving?: string;
+    quantity?: number;
   } | null>(null);
 
   const [config, setConfig] = useState<{
@@ -136,6 +137,7 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
         cover: customization?.cover,
         size: customization?.size,
         engraving: customization?.engraving,
+        quantity: customization?.quantity || 1,
       };
       const res = await fetch("/api/order", {
         method: "POST",
@@ -180,9 +182,11 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     setServerError(null);
   }
 
+  const qty = customization?.quantity || 1;
   const selectedCover = customization ? (config.coverOptions.find((c) => c.value === customization.cover) || config.coverOptions[0]) : null;
   const selectedSize = customization ? (config.sizeOptions.find((s) => s.value === customization.size) || config.sizeOptions[0]) : null;
-  const price = customization ? config.basePrice + (selectedSize?.priceDelta ?? 0) : config.basePrice;
+  const unitBase = qty >= 2 ? 3500 : 3900;
+  const price = customization ? (unitBase + (selectedSize?.priceDelta ?? 0)) * qty : config.basePrice;
 
   const inputBase =
     "w-full rounded-md border bg-surface px-4 py-3 text-body-md text-on-background outline-none transition-all focus:border-accent focus:ring-1 focus:ring-accent";
@@ -239,6 +243,12 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
                   <span className="font-semibold">
                     {selectedSize ? `${selectedSize.label} (${selectedSize.dims})` : customization.size}
                   </span>
+                </div>
+                <div>
+                  <span className="text-on-surface-variant font-medium">
+                    {locale === "ar" ? "الكمية:" : locale === "en" ? "Quantity:" : "Quantité :"}
+                  </span>{" "}
+                  <span className="font-semibold text-accent font-extrabold">{qty}</span>
                 </div>
                 {customization.engraving && (
                   <div className="sm:col-span-2">

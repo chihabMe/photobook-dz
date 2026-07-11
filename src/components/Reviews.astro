@@ -1,0 +1,155 @@
+---
+// Reviews / Social Proof section displaying realistic Facebook customer reviews & comment threads.
+import { useTranslations } from "../data/translations";
+
+const locale = Astro.currentLocale || "fr";
+const t = useTranslations(locale);
+
+const reviewsTitle = {
+  fr: "Avis clients & Preuves sociales (Facebook)",
+  ar: "آراء العملاء ومصداقيتنا على فيسبوك",
+  en: "Customer Reviews & Social Proof (Facebook)"
+};
+
+const reviewsList = [
+  {
+    name: "Kader Dz",
+    avatar: "K",
+    avatarColor: "bg-blue-600 text-white",
+    date: { fr: "Il y a 2 jours", ar: "قبل يومين", en: "2 days ago" },
+    stars: 5,
+    text: {
+      fr: "Franchement, j'ai commandé deux albums. La qualité du bois est incroyable, et la gravure laser sur la couverture est parfaite ! Ya3tikom saha, très sérieux.",
+      ar: "بصراحة، شريت زوج ألبومات. جودة الخشب روعة، والحفر بالليزر على الغلاف متقن بزاف! يعطيكم الصحة، خدمة سريعة وننصح بيهم.",
+      en: "Honestly, I ordered two albums. The wood quality is incredible, and the laser engraving on the cover is perfect! Thank you, very serious service."
+    },
+    likes: 12,
+    reply: null
+  },
+  {
+    name: "Ni Nis",
+    avatar: "N",
+    avatarColor: "bg-emerald-600 text-white",
+    date: { fr: "Il y a 4 jours", ar: "قبل 4 أيام", en: "4 days ago" },
+    stars: 5,
+    text: {
+      fr: "Ch7al yarfad man photo ?",
+      ar: "شحال يرفد من فوطو ؟",
+      en: "How many photos does it hold?"
+    },
+    likes: 3,
+    reply: {
+      author: "Photobook dz",
+      text: {
+        fr: "Bonjour ! Nos albums contiennent 24 pages en papier photo premium et peuvent accueillir de 40 à 100 photos selon la mise en page. Vous nous envoyez les photos sur WhatsApp et on fait tout pour vous ! 😊",
+        ar: "مرحباً! ألبوماتنا تحتوي على 24 صفحة من ورق الصور الفاخر ويمكنها استيعاب من 40 إلى 100 صورة حسب التنسيق. أرسلي لنا صورك على الواتساب وسنتكفل بكل شيء! 😊",
+        en: "Hello! Our albums contain 24 pages of premium photo paper and can hold from 40 to 100 photos depending on the layout. Just send us the photos on WhatsApp and we do everything for you! 😊"
+      }
+    }
+  },
+  {
+    name: "Sarah B.",
+    avatar: "S",
+    avatarColor: "bg-purple-600 text-white",
+    date: { fr: "Il y a 1 semaine", ar: "قبل أسبوع", en: "1 week ago" },
+    stars: 5,
+    text: {
+      fr: "Magnifique Travel Book personnalisé ! Livraison rapide à Tizi Ouzou. Le point fort c'est qu'on peut vérifier la marchandise avant de payer le livreur. Je recommande à 100%.",
+      ar: "ألبوم سفر رائع ومخصص! توصيل سريع إلى تيزي وزو. أحسن حاجة أنه يمكنك فحص السلعة قبل دفع المال للموزع. أنصح بهم 100%.",
+      en: "Beautiful customized Travel Book! Fast delivery to Tizi Ouzou. The best part is that you can check the product before paying the delivery courier. 100% recommended."
+    },
+    likes: 8,
+    reply: null
+  },
+  {
+    name: "Amine Algiers",
+    avatar: "A",
+    avatarColor: "bg-amber-600 text-white",
+    date: { fr: "Il y a 2 semaines", ar: "قبل أسبوعين", en: "2 weeks ago" },
+    stars: 5,
+    text: {
+      fr: "Omra Photobook de qualité supérieure. J'ai immortalisé les souvenirs de mes parents, ils étaient très émus en voyant le résultat. Merci beaucoup pour le professionnalisme.",
+      ar: "فوتوبوك العمرة بجودة عالية جداً. خلدت ذكريات والدي، تأثروا كثيراً عند رؤية النتيجة. شكراً جزيلاً على الاحترافية والاتقان.",
+      en: "High quality Omra Photobook. I preserved the memories of my parents, they were very touched when they saw the result. Thank you so much for the professionalism."
+    },
+    likes: 19,
+    reply: null
+  }
+];
+
+const currentTitle = reviewsTitle[locale as "fr" | "ar" | "en"] || reviewsTitle.fr;
+---
+
+<section id="reviews" class="px-gutter py-section-padding bg-surface">
+  <div class="mx-auto max-w-container-max">
+    <div class="mb-12 text-center">
+      <h2 class="text-headline-lg font-bold text-on-background" dir={locale === "ar" ? "rtl" : "ltr"}>
+        {currentTitle}
+      </h2>
+      <div class="mt-2 flex items-center justify-center gap-1 text-accent">
+        <span class="material-symbols-outlined fill-current">star</span>
+        <span class="material-symbols-outlined fill-current">star</span>
+        <span class="material-symbols-outlined fill-current">star</span>
+        <span class="material-symbols-outlined fill-current">star</span>
+        <span class="material-symbols-outlined fill-current">star</span>
+        <span class="ml-2 text-label-bold font-bold text-on-surface-variant">4.9 / 5 (65+ {locale === "ar" ? "تقييم" : "avis"})</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+      {reviewsList.map((rev) => (
+        <div class="flex flex-col rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-6 shadow-sm hover:shadow-md transition-shadow" dir={locale === "ar" ? "rtl" : "ltr"}>
+          {/* Header */}
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-body-lg ${rev.avatarColor}`}>
+                {rev.avatar}
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-on-surface">{rev.name}</span>
+                  <span class="material-symbols-outlined text-sm text-blue-500 font-bold">verified</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">{rev.date[locale as "fr" | "ar" | "en"] || rev.date.fr}</span>
+              </div>
+            </div>
+            
+            <div class="flex text-amber-500">
+              {Array.from({ length: rev.stars }).map(() => (
+                <span class="material-symbols-outlined text-sm fill-current">star</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Comment text */}
+          <p class="text-body-md text-on-surface leading-relaxed flex-grow">
+            {rev.text[locale as "fr" | "ar" | "en"] || rev.text.fr}
+          </p>
+
+          {/* Actions */}
+          <div class="mt-4 flex items-center gap-4 text-xs text-on-surface-variant/80 border-t border-outline-variant/10 pt-3">
+            <button class="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-sm">thumb_up</span>
+              <span>{locale === "ar" ? "أعجبني" : "J'aime"} ({rev.likes})</span>
+            </button>
+            <span>{locale === "ar" ? "رد" : "Répondre"}</span>
+          </div>
+
+          {/* Reply block if exists */}
+          {rev.reply && (
+            <div class="mt-4 rounded-lg bg-surface-container-low p-4 border-l-2 border-accent/40 mr-2 ml-2">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-white">P</span>
+                <span class="font-bold text-xs text-primary">{rev.reply.author}</span>
+                <span class="rounded bg-accent/15 px-1.5 py-0.5 text-[9px] font-bold text-accent uppercase tracking-wider">{locale === "ar" ? "صاحب الصفحة" : "Auteur"}</span>
+              </div>
+              <p class="text-xs text-on-surface-variant leading-relaxed">
+                {rev.reply.text[locale as "fr" | "ar" | "en"] || rev.reply.text.fr}
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

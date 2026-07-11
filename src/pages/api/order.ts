@@ -73,12 +73,16 @@ export const POST: APIRoute = async ({ request }) => {
   const cover = typeof body.cover === "string" ? body.cover : null;
   const size = typeof body.size === "string" ? body.size : null;
   const engraving = typeof body.engraving === "string" ? body.engraving : null;
+  const quantity = typeof body.quantity === "number" ? body.quantity : 1;
 
   let price = 3500;
   try {
     const configRows = await sql`SELECT value FROM shop_config WHERE key = 'base_price_da'`;
-    const basePrice = configRows[0] ? Number(configRows[0].value) : 3500;
-    price = basePrice;
+    const dbBasePrice = configRows[0] ? Number(configRows[0].value) : 3500;
+    
+    // Apply Weekend Promo: 1 photobook = 3900 DA, 2+ photobooks = 3500 DA / unit
+    const unitBasePrice = quantity >= 2 ? dbBasePrice : (dbBasePrice + 400);
+    price = unitBasePrice;
 
     if (size) {
       const sizeRows = await sql`SELECT price_delta FROM book_sizes WHERE value = ${size} AND is_active = true`;
@@ -86,11 +90,15 @@ export const POST: APIRoute = async ({ request }) => {
         price += Number(sizeRows[0].price_delta);
       }
     }
+    price = price * quantity;
   } catch (err) {
-    console.error("[order API] Failed to query dynamic pricing, using default price:", err);
+    console.error("[order API] Failed to query dynamic pricing, using default price calculation:", err);
+    const fallbackBase = quantity >= 2 ? 3500 : 3900;
+    price = fallbackBase * quantity;
   }
 
-  const product = cover ? `photobook-${cover}-${size}` : "photobook-bois-classique";
+  const productBase = cover ? `photobook-${cover}-${size}` : "photobook-bois-classique";
+  const product = quantity >= 2 ? `${productBase} (x${quantity})` : productBase;
 
   const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 32);
   const userAgent = (request.headers.get("user-agent") ?? "").slice(0, 255);

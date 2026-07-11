@@ -35,6 +35,7 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
     size: "medium",
     engraving: "",
     photoUrl: null,
+    quantity: 1,
   });
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -105,12 +106,13 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
         cover: state.cover,
         size: state.size,
         engraving: state.engraving,
+        quantity: state.quantity || 1,
       };
       sessionStorage.setItem("customizer_order", JSON.stringify(toSave));
     } catch (e) {
       console.error("Failed to save customizer choices to sessionStorage:", e);
     }
-  }, [state.cover, state.size, state.engraving]);
+  }, [state.cover, state.size, state.engraving, state.quantity]);
 
   function setCover(cover: CoverMaterial) {
     setState((s) => ({ ...s, cover }));
@@ -120,6 +122,9 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
   }
   function setEngraving(engraving: string) {
     setState((s) => ({ ...s, engraving: engraving.slice(0, ENGRAVING_MAX) }));
+  }
+  function setQuantity(q: number) {
+    setState((s) => ({ ...s, quantity: Math.max(1, q) }));
   }
 
   function handleUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -152,7 +157,10 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
   }
 
   const activeSizeOption = config.sizeOptions.find((s) => s.value === state.size) || config.sizeOptions[0];
-  const price = config.basePrice + (activeSizeOption?.priceDelta ?? 0);
+  const qty = state.quantity || 1;
+  const dbBasePrice = config.basePrice;
+  const unitBasePrice = qty >= 2 ? dbBasePrice : (dbBasePrice + 400);
+  const price = (unitBasePrice + (activeSizeOption?.priceDelta ?? 0)) * qty;
 
   return (
     <main className="mx-auto flex h-[calc(100vh-80px)] w-full max-w-container-max flex-col md:flex-row">
@@ -333,6 +341,46 @@ export default function Customizer({ locale = "fr" }: { locale?: string }) {
               })}
             </div>
           </fieldset>
+
+          {/* Quantity Selector */}
+          <div className="space-y-stack-sm">
+            <h2 className="text-label-bold uppercase tracking-wider text-on-surface">
+              {locale === "ar" ? "الكمية" : locale === "en" ? "Quantity" : "Quantité"}
+            </h2>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center rounded-lg border border-outline-variant bg-surface-container-low p-1">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((state.quantity || 1) - 1)}
+                  className="flex h-10 w-10 items-center justify-center rounded-md text-on-surface hover:bg-surface-variant transition-colors cursor-pointer"
+                  disabled={(state.quantity || 1) <= 1}
+                >
+                  <span className="material-symbols-outlined text-lg">remove</span>
+                </button>
+                <span className="w-12 text-center font-extrabold text-lg text-on-surface">
+                  {state.quantity || 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((state.quantity || 1) + 1)}
+                  className="flex h-10 w-10 items-center justify-center rounded-md text-on-surface hover:bg-surface-variant transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-lg">add</span>
+                </button>
+              </div>
+              
+              <div className="flex-grow rounded-lg bg-accent-tint/15 border border-accent/20 px-3 py-2 text-xs text-accent font-semibold flex items-center gap-1.5 animate-pulse">
+                <span className="material-symbols-outlined text-sm">local_fire_department</span>
+                <span>
+                  {locale === "ar" 
+                    ? "ألبومين أو أكثر = 3500 دج للواحد (وفر 800 دج)" 
+                    : locale === "en" 
+                    ? "2+ albums = 3500 DA / unit (Save 800 DA!)" 
+                    : "2+ albums = 3500 DA / unité (Économisez 800 DA !)"}
+                </span>
+              </div>
+            </div>
+          </div>
 
           {/* Cover Engraving */}
           <div className="space-y-stack-sm">
