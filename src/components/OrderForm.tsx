@@ -31,12 +31,18 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const [serverError, setServerError] = useState<string | null>(null);
   const [customization, setCustomization] = useState<{
-    cover?: string;
-    size?: string;
-    engraving?: string;
-    quantity?: number;
-    theme?: string;
-  } | null>(null);
+    cover: string;
+    size: string;
+    engraving: string;
+    quantity: number;
+    theme: string;
+  }>({
+    cover: "wooden",
+    size: "small",
+    engraving: "",
+    quantity: 1,
+    theme: "classic",
+  });
 
   const [config, setConfig] = useState<{
     coverOptions: any[];
@@ -83,7 +89,12 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     try {
       const saved = sessionStorage.getItem("customizer_order");
       if (saved) {
-        setCustomization(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setCustomization((prev) => ({
+          ...prev,
+          ...parsed,
+          quantity: parsed.quantity || prev.quantity,
+        }));
       }
     } catch (e) {
       console.error("Failed to read from sessionStorage:", e);
@@ -121,6 +132,13 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     return localErr;
   }
 
+  const handleCustomizationChange = (field: string, value: any) => {
+    setCustomization((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setServerError(null);
@@ -136,11 +154,11 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
       const payload = {
         ...values,
         phone: normalizePhone(values.phone),
-        cover: customization?.cover,
-        size: customization?.size,
-        engraving: customization?.engraving,
-        quantity: customization?.quantity || 1,
-        theme: customization?.theme || 'classic',
+        cover: customization.cover,
+        size: customization.size,
+        engraving: customization.engraving,
+        quantity: customization.quantity,
+        theme: customization.theme,
       };
       const res = await fetch("/api/order", {
         method: "POST",
@@ -151,8 +169,13 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
       if (res.ok) {
         setStatus("success");
         setValues(EMPTY);
-        // Clear customization on success
-        setCustomization(null);
+        setCustomization({
+          cover: "wooden",
+          size: "small",
+          engraving: "",
+          quantity: 1,
+          theme: "classic",
+        });
         try {
           sessionStorage.removeItem("customizer_order");
         } catch {}
@@ -183,32 +206,19 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
     setErrors({});
     setStatus("idle");
     setServerError(null);
+    setCustomization({
+      cover: "wooden",
+      size: "small",
+      engraving: "",
+      quantity: 1,
+      theme: "classic",
+    });
   }
 
-  const getThemeLabel = (themeVal?: string) => {
-    if (!themeVal) return "";
-    const themes = {
-      classic: { fr: "Souvenirs Classiques", ar: "ذكريات كلاسيكية", en: "Classic Memories" },
-      wedding: { fr: "Mariage & Fiançailles", ar: "زواج وخطوبة", en: "Wedding & Engagement" },
-      omra: { fr: "Omra & Hajj", ar: "عمرة وحج", en: "Omra & Hajj" },
-      baby: { fr: "Bébé & Naissance", ar: "طفل ومولود جديد", en: "Baby & Birth" },
-      travel: { fr: "Voyages & Aventures", ar: "سفر ومغامرات", en: "Travel & Vacations" }
-    };
-    const tOpt = themes[themeVal as keyof typeof themes] || themes.classic;
-    const lang = (locale === "ar" || locale === "en" ? locale : "fr") as "fr" | "ar" | "en";
-    return tOpt[lang] || tOpt.fr;
-  };
-
-  const qty = customization?.quantity || 1;
-  const selectedCover = customization ? (config.coverOptions.find((c) => c.value === customization.cover) || config.coverOptions[0]) : null;
-  // Use SIZE_OPTIONS from customizerOptions as the source of truth for price deltas
-  const selectedSize = customization
-    ? SIZE_OPTIONS.find((s) => s.value === customization.size) ?? SIZE_OPTIONS[0]
-    : null;
+  const qty = customization.quantity;
+  const selectedSize = SIZE_OPTIONS.find((s) => s.value === customization.size) ?? SIZE_OPTIONS[0];
   const unitBase = qty >= 2 ? BASE_PRICE_BULK_DA : BASE_PRICE_SINGLE_DA;
-  const price = customization
-    ? (unitBase + (selectedSize?.priceDelta ?? 0)) * qty
-    : BASE_PRICE_SINGLE_DA;
+  const price = (unitBase + selectedSize.priceDelta) * qty;
 
   const inputBase =
     "w-full rounded-md border bg-surface px-4 py-3 text-body-md text-on-background outline-none transition-all focus:border-accent focus:ring-1 focus:ring-accent";
@@ -249,50 +259,123 @@ export default function OrderForm({ locale = "fr" }: { locale?: string }) {
         </div>
       ) : (
         <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-          {customization && (
-            <div className="mb-6 rounded-lg border border-accent/20 bg-accent-tint/10 p-5 text-on-surface">
-              <h4 className="font-bold text-body-lg mb-3 text-accent flex items-center gap-2">
-                <span className="material-symbols-outlined text-accent">auto_stories</span>
-                {t("form.yourCustom")}
-              </h4>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 text-body-md">
-                <div>
-                  <span className="text-on-surface-variant font-medium">{t("form.customCover")}</span>{" "}
-                  <span className="font-semibold">{selectedCover?.label || customization.cover}</span>
+          {/* Interactive Album Options Configurator */}
+          <div className="mb-6 rounded-lg border border-accent/20 bg-accent-tint/5 p-6 text-on-surface space-y-4">
+            <h4 className="font-bold text-body-lg mb-2 text-accent flex items-center gap-2">
+              <span className="material-symbols-outlined text-accent font-extrabold">tune</span>
+              {locale === "ar" ? "تفاصيل طلبك المخصص:" : locale === "en" ? "Customize Your Album:" : "Personnalisez votre album :"}
+            </h4>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {/* Cover Selection */}
+              <div>
+                <label className="mb-1 block text-label-bold font-bold text-secondary text-sm">
+                  {t("custom.coverMaterial")}
+                </label>
+                <select
+                  value={customization.cover}
+                  onChange={(e) => handleCustomizationChange("cover", e.target.value)}
+                  className="w-full rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-body-md text-on-background outline-none focus:border-accent"
+                >
+                  <option value="wooden">{locale === "ar" ? "غطاء خشبي" : locale === "en" ? "Wooden Cover" : "Couverture en bois"}</option>
+                  <option value="classic">{locale === "ar" ? "غطاء جلدي كلاسيكي" : locale === "en" ? "Classic Leatherette" : "Couverture classique"}</option>
+                </select>
+              </div>
+
+              {/* Size Selection */}
+              <div>
+                <label className="mb-1 block text-label-bold font-bold text-secondary text-sm">
+                  {t("custom.bookSize")}
+                </label>
+                <select
+                  value={customization.size}
+                  onChange={(e) => handleCustomizationChange("size", e.target.value)}
+                  className="w-full rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-body-md text-on-background outline-none focus:border-accent"
+                >
+                  <option value="small">{locale === "ar" ? "صغير (20x20 سم)" : locale === "en" ? "Small (20x20 cm)" : "Petit (20x20 cm)"}</option>
+                  <option value="medium">{locale === "ar" ? "متوسط (30x20 سم) (+500 دج)" : locale === "en" ? "Medium (30x20 cm) (+500 DA)" : "Moyen (30x20 cm) (+500 DA)"}</option>
+                  <option value="large">{locale === "ar" ? "كبير (40x30 سم) (+1000 دج)" : locale === "en" ? "Large (40x30 cm) (+1000 DA)" : "Grand (40x30 cm) (+1000 DA)"}</option>
+                </select>
+              </div>
+
+              {/* Theme Selection */}
+              <div>
+                <label className="mb-1 block text-label-bold font-bold text-secondary text-sm">
+                  {locale === "ar" ? "ثيم التصميم:" : locale === "en" ? "Design Theme:" : "Thème de design :"}
+                </label>
+                <select
+                  value={customization.theme}
+                  onChange={(e) => handleCustomizationChange("theme", e.target.value)}
+                  className="w-full rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-body-md text-on-background outline-none focus:border-accent"
+                >
+                  <option value="classic">{locale === "ar" ? "ذكريات كلاسيكية" : locale === "en" ? "Classic Memories" : "Souvenirs Classiques"}</option>
+                  <option value="wedding">{locale === "ar" ? "زواج وخطوبة" : locale === "en" ? "Wedding & Engagement" : "Mariage & Fiançailles"}</option>
+                  <option value="omra">{locale === "ar" ? "عمرة وحج" : locale === "en" ? "Omra & Hajj" : "Omra & Hajj"}</option>
+                  <option value="baby">{locale === "ar" ? "طفل ومولود جديد" : locale === "en" ? "Baby & Birth" : "Bébé & Naissance"}</option>
+                  <option value="travel">{locale === "ar" ? "سفر ومغامرات" : locale === "en" ? "Travel & Vacations" : "Voyages & Aventures"}</option>
+                </select>
+              </div>
+
+              {/* Quantity Selector */}
+              <div>
+                <label className="mb-1 block text-label-bold font-bold text-secondary text-sm">
+                  {locale === "ar" ? "الكمية:" : locale === "en" ? "Quantity:" : "Quantité :"}
+                </label>
+                <div className="flex h-10 w-32 items-center rounded-lg border border-outline-variant/40 bg-surface">
+                  <button
+                    type="button"
+                    onClick={() => handleCustomizationChange("quantity", Math.max(1, customization.quantity - 1))}
+                    className="flex h-full w-10 items-center justify-center text-on-surface hover:bg-surface-variant rounded-l-lg transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">remove</span>
+                  </button>
+                  <span className="flex-1 text-center font-bold text-body-md">{customization.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCustomizationChange("quantity", customization.quantity + 1)}
+                    className="flex h-full w-10 items-center justify-center text-on-surface hover:bg-surface-variant rounded-r-lg transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>
+                  </button>
                 </div>
-                <div>
-                  <span className="text-on-surface-variant font-medium">
-                    {locale === "ar" ? "ثيم التصميم:" : locale === "en" ? "Design Theme:" : "Thème du design :"}
-                  </span>{" "}
-                  <span className="font-semibold">{getThemeLabel(customization.theme)}</span>
-                </div>
-                <div>
-                  <span className="text-on-surface-variant font-medium">{t("form.customSize")}</span>{" "}
-                  <span className="font-semibold">
-                    {selectedSize ? `${selectedSize.label} (${selectedSize.dims})` : customization.size}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-on-surface-variant font-medium">
-                    {locale === "ar" ? "الكمية:" : locale === "en" ? "Quantity:" : "Quantité :"}
-                  </span>{" "}
-                  <span className="font-semibold text-accent font-extrabold">{qty}</span>
-                </div>
-                {customization.engraving && (
-                  <div className="sm:col-span-2">
-                    <span className="text-on-surface-variant font-medium">{t("form.customEngraving")}</span>{" "}
-                    <span className="font-mono bg-surface-container-low px-2 py-1 rounded text-accent font-semibold">"{customization.engraving}"</span>
-                  </div>
-                )}
-                <div className="sm:col-span-2 mt-2 pt-3 border-t border-outline-variant/20 flex justify-between items-center">
-                  <span className="text-body-lg font-bold text-on-surface">{t("form.estimatedPrice")}</span>
-                  <span className="text-headline-sm font-extrabold text-accent">
-                    {price.toLocaleString("en-US")} DA
+              </div>
+
+              {/* Cover Engraving */}
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-label-bold font-bold text-secondary text-sm">
+                  {t("custom.engraving")} ({locale === "ar" ? "اختياري" : locale === "en" ? "Optional" : "Optionnel"})
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={30}
+                    placeholder={t("custom.engravingPlaceholder")}
+                    value={customization.engraving}
+                    onChange={(e) => handleCustomizationChange("engraving", e.target.value)}
+                    className="w-full rounded-md border border-outline-variant/40 bg-surface px-4 py-2 text-body-md text-on-background outline-none transition-all focus:border-accent"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-outline font-mono">
+                    {customization.engraving.length}/30
                   </span>
                 </div>
               </div>
             </div>
-          )}
+
+            {/* Price Calculations */}
+            <div className="mt-4 pt-4 border-t border-outline-variant/20 flex justify-between items-center bg-accent-tint/10 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+              <span className="text-body-lg font-bold text-on-surface">{t("form.estimatedPrice")}</span>
+              <div className="text-right">
+                <span className="text-headline-sm font-extrabold text-accent">
+                  {price.toLocaleString("en-US")} DA
+                </span>
+                {customization.quantity >= 2 && (
+                  <p className="text-xs text-accent font-semibold mt-1">
+                    {locale === "ar" ? "تم تطبيق خصم الكمية (وفر 400 دج للوحدة)!" : locale === "en" ? "Bulk discount applied!" : "Remise de groupe appliquée !"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
           {/* Honeypot — visually hidden, off-screen; real users never fill it. */}
           <div
             aria-hidden="true"
